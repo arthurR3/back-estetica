@@ -1,4 +1,4 @@
-import  models  from '../libs/sequelize.js';
+import models from '../libs/sequelize.js';
 import { User } from '../db/models/users.model.js';
 
 class UsersService {
@@ -14,6 +14,15 @@ class UsersService {
         const res = await User.findByPk(id);
         return res;
     }
+    async findByEmail(email) {
+        const res = await User.findOne({
+            where: {
+                email: email,
+            },
+        });
+        return res;
+    }
+    
 
     async create(data) {
         const res = await User.create(data);
