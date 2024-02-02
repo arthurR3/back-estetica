@@ -62,7 +62,7 @@ const UserSchema = {
         field: 'CP'
     },
     rol:{ 
-        allowNull:false,
+        allowNull:true,
         type: DataTypes.INTEGER,
         field: 'Rol'
     },
@@ -72,7 +72,7 @@ const UserSchema = {
         field: 'Imagen'
     },
     birthday:{ 
-        allowNull:false,
+        allowNull:true,
         type: DataTypes.DATE,
         field: 'Fecha_nacimiento'
     },
