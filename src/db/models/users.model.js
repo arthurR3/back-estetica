@@ -76,6 +76,22 @@ const UserSchema = {
         type: DataTypes.DATE,
         field: 'Fecha_nacimiento'
     },
+    question:{ 
+        allowNull:true,
+        type: DataTypes.STRING,
+        field: 'Pregunta'
+    },
+    answers:{ 
+        allowNull:true,
+        type: DataTypes.STRING,
+        field: 'Respuesta'
+    },
+    numIntentos:{
+        allowNull: true,
+        type : DataTypes.INTEGER,
+        defaultValue: 0,
+        field: 'NumIntentos' 
+    }
 }
   
 export { User, UserSchema };
