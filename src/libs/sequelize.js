@@ -13,8 +13,15 @@ const sequelize = new Sequelize(
     }
 );
 
-sequelize.sync();
+(async () => {
+    try {
+        await sequelize.sync();
+        console.log('Database synced successfully.');
+    } catch (error) {
+        console.error('Error syncing database:', error);
+    }
+})();
+
 setupModels(sequelize);
 
 export default sequelize;
-//export default sequelize;
