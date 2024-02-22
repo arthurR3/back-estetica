@@ -13,17 +13,8 @@ const sequelize = new Sequelize(
     }
 );
 
-sequelize.authenticate()
-  .then(() => {
-    console.log('DB connection successful.');
-    return sequelize.sync(); // Sincroniza los modelos después de que se haya establecido la conexión
-  })
-  .then(() => {
-    setupModels(sequelize); // Configura los modelos después de sincronizarlos
-  })
-  .catch((err) => {
-    // catch error here
-    console.error('Unable to connect to the database:', err);
-  });
+sequelize.sync();
+setupModels(sequelize);
 
 export default sequelize;
+//export default sequelize;
