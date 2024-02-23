@@ -11,7 +11,8 @@ const sequelize = new Sequelize(
     {
         host: config.dbHost,
         dialect: 'mysql',
-        dialectModule: mysql2
+        dialectModule: mysql2,
+        dialectOptions: { dialect: 'mysql' }
     }
 );
 
