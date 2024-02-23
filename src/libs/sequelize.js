@@ -1,3 +1,5 @@
+
+import mysql2 from 'mysql2'
 import { Sequelize } from 'sequelize';
 import { config } from '../config/config.js';
 import setupModels from './../db/models/index.js';
@@ -13,7 +15,15 @@ const sequelize = new Sequelize(
     }
 );
 
-sequelize.sync();
+(async () => {
+    try {
+        await sequelize.sync();
+        console.log('Database synced successfully.');
+    } catch (error) {
+        console.error('Error syncing database:', error);
+    }
+})();
+
 setupModels(sequelize);
 
 export default sequelize;

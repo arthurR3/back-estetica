@@ -3,11 +3,11 @@ dotenv.config();
 
 const config = {
   port: process.env.PORT || 3000,
-  dbUser:  process.env.DB_USER,
-  dbPassword:  process.env.DB_PASSWORD,
-  dbHost:  process.env.DB_HOST,
-  dbName:  process.env.DB_NAME,
-  dbPort:  process.env.DB_PORT,
+  dbUser:  process.env.MYSQLUSER,
+  dbPassword:  process.env.MYSQLPASSWORD,
+  dbHost:  process.env.MYSQLHOST,
+  dbName:  process.env.MYSQLDATABASE,
+  dbPort:  process.env.MYSQLPORT,
 }
 
 export { config }; //se quito el default
