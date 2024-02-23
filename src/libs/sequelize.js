@@ -1,8 +1,9 @@
-import { Sequelize } from 'sequelize';
+
 import mysql2 from 'mysql2'
+import { Sequelize } from 'sequelize';
 import { config } from '../config/config.js';
 import setupModels from './../db/models/index.js';
-
+import mysql2 from 'mysql2'
 const sequelize = new Sequelize(
     config.dbName, // name database
     config.dbUser, // user database
@@ -26,3 +27,4 @@ const sequelize = new Sequelize(
 setupModels(sequelize);
 
 export default sequelize;
+
