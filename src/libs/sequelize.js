@@ -4,12 +4,9 @@ import { config } from '../config/config.js';
 import setupModels from './../db/models/index.js';
 
 const sequelize = new Sequelize(
-    config.dbName, // name database
-    config.dbUser, // user database
-    config.dbPassword, // password database
     process.env.MYSQL_URL,
     {
-        host: config.dbHost,
+        host: process.env.MYSQLHOST,
         dialect: 'mysql',
     }
 );
