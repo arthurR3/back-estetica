@@ -2,11 +2,12 @@
 
 const config = {
   port: process.env.PORT || 3000,
-  dbUser:  process.env.MYSQLUSER,
-  dbPassword:  process.env.MYSQLPASSWORD,
-  dbHost:  process.env.MYSQLHOST,
-  dbName:  process.env.MYSQLDATABASE,
-  dbPort:  process.env.MYSQLPORT,
+  dbUser:  process.env.DB_USER,
+  dbPassword:  process.env.DB_PASSWORD,
+  dbHost:  process.env.DB_HOST,
+  dbName:  process.env.DB_NAME,
+  dbPort:  process.env.DB_PORT,
+  dbURL :process.env.MYSQL_URL,
 }
 
 export { config }; //se quito el default
