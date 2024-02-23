@@ -1,5 +1,5 @@
 import { Sequelize } from 'sequelize';
-
+import mysql2 from 'mysql2'
 import { config } from '../config/config.js';
 import setupModels from './../db/models/index.js';
 
@@ -9,7 +9,8 @@ const sequelize = new Sequelize(
     config.dbPassword, // password database
     {
         host: config.dbHost,
-        dialect: 'mysql'
+        dialect: 'mysql',
+        dialectModule: mysql2
     }
 );
 
