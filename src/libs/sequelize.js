@@ -2,6 +2,7 @@
 import { Sequelize } from 'sequelize';
 import { config } from '../config/config.js';
 import setupModels from './../db/models/index.js';
+import mysql2 from 'mysql2'
 
 const sequelize = new Sequelize(
     process.env.MYSQLDATABASE,
