@@ -1,10 +1,10 @@
 
-import mysql2 from 'mysql2'
 import { Sequelize } from 'sequelize';
 import { config } from '../config/config.js';
 import setupModels from './../db/models/index.js';
 const sequelize = new Sequelize(process.env.MYSQL_URL,
     {
+        host: process.env.MYSQLHOST,
         dialect: 'mysql',
         define :{
             timestamps: false
