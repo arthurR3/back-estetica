@@ -36,7 +36,6 @@ const generateCode = () => {
     return String(randomNumber).padStart(5, '0');
 }
 
-
 const get = async (req, res) => {
     try {
         const response = await service.find();
@@ -210,7 +209,6 @@ const updatePassword = async (req, res) => {
         res.status(500).send({ success: false, message: error.message });
     }
 }
-
 
 const create = async (req, res) => {
     try {
