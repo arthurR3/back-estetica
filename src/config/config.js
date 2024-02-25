@@ -1,4 +1,5 @@
 
+
 const config = {
   port: process.env.PORT || 3000,
   dbUser:  process.env.DB_USER,
@@ -6,7 +7,7 @@ const config = {
   dbHost:  process.env.DB_HOST,
   dbName:  process.env.DB_NAME,
   dbPort:  process.env.DB_PORT,
-  dbUrl: process.env.MYSQL_URL
+  dbURL :process.env.MYSQL_URL,
 }
 
 export { config }; //se quito el default
