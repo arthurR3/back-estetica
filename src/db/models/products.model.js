@@ -43,7 +43,7 @@ const ProductSchema = {
         field: 'Descripcion'
     },
     image:{ 
-        allowNull:true,
+        allowNull:false,
         type: DataTypes.STRING,
         field: 'Imagen'
     }
