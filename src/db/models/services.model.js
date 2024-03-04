@@ -1,52 +1,46 @@
 import { Model, DataTypes, Sequelize } from 'sequelize';
 
-const PRODUCT_TABLE = 'producto';
+const SERVICE_TABLE = 'servicio';
 
-class Product extends Model {
+class Service extends Model {
     static config(sequelize) {
         return {
             sequelize,
-            tableName: PRODUCT_TABLE,
-            modelName: 'Productos',
+            tableName: SERVICE_TABLE,
+            modelName: 'Servicio',
             timestamps: false
         }
     }
 } 
 
-const ProductSchema = {
+const ServiceSchema = {
     id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: DataTypes.INTEGER,
-        field:'id_producto'
+        field:'id_servicio'
     },
-   
     name: {
         allowNull: false,
         type: DataTypes.STRING,
         field:'Nombre'
+    },
+    description: {
+        allowNull: false,
+        type: DataTypes.STRING,
+        field:'Descripcion'
     },
     price: {
         allowNull: false,
         type: DataTypes.FLOAT,
         field:'Precio'
     },
-    amount: {
-        allowNull: false,
-        type: DataTypes.INTEGER,
-        field:'Cantidad'
-    },
-    description:{ 
-        allowNull:false,
-        type: DataTypes.STRING,
-        field: 'Descripcion'
-    },
     image:{ 
-        allowNull:false,
+        allowNull:true,
         type: DataTypes.STRING,
         field: 'Imagen'
     }
 }
   
-export { Product, ProductSchema };
+export { Service, ServiceSchema };
