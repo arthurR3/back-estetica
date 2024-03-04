@@ -30,12 +30,12 @@ const verifyToken = (req, res, next) => {
   });
 };
 
-
+  
 const generateCode = () => {
     let randomNumber = Math.floor(Math.random() * 100000);
     return String(randomNumber).padStart(5, '0');
 }
-
+ 
 const get = async (req, res) => {
     try {
         const response = await service.find();
@@ -131,10 +131,10 @@ const verificationEmail = async (req, res) => {
         }
         {
             // Se verifica si es valido el codigo
-            console.log(resetCode)
+            /* console.log(resetCode)
             console.log('Existing ', existingCode.resetCode)
             console.log('expiration ', existingCode.expirationTime)
-            console.log(new Date(Date.now()))
+            console.log(new Date(Date.now())) */
         }
 
         if (existingCode.resetCode === resetCode && existingCode.expirationTime > new Date(Date.now())) {
