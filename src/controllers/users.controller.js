@@ -2,7 +2,8 @@ import UsersService from '../services/users.service.js';
 import bcrypt from 'bcrypt'
 import nodemailer from 'nodemailer'
 import ResetCodeService from '../services/codes.service.js';
-const jwt = require('jsonwebtoken')
+import { jwt } from 'jsonwebtoken';
+
 const codeService = new ResetCodeService();
 const service = new UsersService();
 
