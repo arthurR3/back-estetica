@@ -2,8 +2,7 @@ import UsersService from '../services/users.service.js';
 import bcrypt from 'bcrypt'
 import nodemailer from 'nodemailer'
 import ResetCodeService from '../services/codes.service.js';
-import { jwt } from 'jsonwebtoken';
-
+import jwt from 'jsonwebtoken'
 const codeService = new ResetCodeService();
 const service = new UsersService();
 
@@ -187,7 +186,7 @@ const login = async (req, res) => {
         }
         const token = jwt.sign({user:usuario}, secretKey , {expiresIn:'2h'})
         console.log('token ',token)
-        res.json({ success: true, data: token})
+        res.json({ success: true, data: response})
     } catch (error) {
         res.status(500).send({ success: false, message: error.message })
     }
