@@ -2,7 +2,7 @@ import UsersService from '../services/users.service.js';
 import bcrypt from 'bcrypt'
 import nodemailer from 'nodemailer'
 import ResetCodeService from '../services/codes.service.js';
-
+const jwt = require('jsonwebtoken')
 const codeService = new ResetCodeService();
 const service = new UsersService();
 
@@ -176,7 +176,7 @@ const login = async (req, res) => {
             }
             return res.status(401).json({ success: false, message: 'Contraseña incorrecta' })
         }
-        /* const usuario ={
+        const usuario ={
             idUser : response.id,
             nombre: response.name,
             lastName : response.last_name1,
@@ -184,9 +184,9 @@ const login = async (req, res) => {
             email : response.email,
 
         }
-        const token = jwt.sign({user:usuario}, secretKey , {expiresIn:'1h'})
-        console.log('token ',token) */
-        res.json({ success: true, data: response})
+        const token = jwt.sign({user:usuario}, secretKey , {expiresIn:'2h'})
+        console.log('token ',token)
+        res.json({ success: true, data: token})
     } catch (error) {
         res.status(500).send({ success: false, message: error.message })
     }
