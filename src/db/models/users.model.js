@@ -1,5 +1,5 @@
 import { Model, DataTypes, Sequelize } from 'sequelize';
-
+import CryptoJS from 'crypto-js';
 const USER_TABLE = 'usuario';
 
 class User extends Model {
@@ -11,7 +11,26 @@ class User extends Model {
             timestamps: false
         }
     }
-} 
+
+    // Metodo para encriptar el ID del Usuario antes de crear al nuevo usuario
+    static async encryptId(instance) {
+        if (instance.id_usuario) {
+            instance.id_usuario = CryptoJS.AES.encrypt(instance.id_usuario.toString(), process.env.SECRET_KEY).toString();
+        }
+    }
+
+    //Hook beforeCreate para encriptar el ID antes de que se cree al usuario
+    static init(sequelize) {
+        super.init(UserSchema, {
+            sequelize,
+            hooks: {
+                beforeCreate: async (instance, options) => {
+                    await User.encryptId(instance)
+                }
+            }
+        });
+    }
+}
 
 const UserSchema = {
     id: {
@@ -19,79 +38,79 @@ const UserSchema = {
         autoIncrement: true,
         primaryKey: true,
         type: DataTypes.INTEGER,
-        field:'id_usuario'
+        field: 'id_usuario'
     },
     name: {
         allowNull: false,
         type: DataTypes.STRING,
-        field:'Nombre'
+        field: 'Nombre'
     },
     last_name1: {
         allowNull: false,
         type: DataTypes.STRING,
-        field:'ApellidoP'
+        field: 'ApellidoP'
     },
     last_name2: {
         allowNull: false,
         type: DataTypes.STRING,
-        field:'ApellidoM'
+        field: 'ApellidoM'
     },
-    email:{ 
-        allowNull:false,
+    email: {
+        allowNull: false,
         type: DataTypes.STRING,
         field: 'Correo'
     },
-    password:{ 
-        allowNull:false,
+    password: {
+        allowNull: false,
         type: DataTypes.STRING,
         field: 'Contraseña'
     },
-    address:{ 
-        allowNull:true,
+    address: {
+        allowNull: true,
         type: DataTypes.STRING,
         field: 'Direccion'
     },
-    phone:{
+    phone: {
         allowNull: false,
         type: DataTypes.STRING,
         field: 'Telefono'
     },
-    cp:{ 
-        allowNull:false,
+    cp: {
+        allowNull: false,
         type: DataTypes.STRING,
         field: 'CP'
     },
-    rol:{ 
-        allowNull:true,
+    rol: {
+        allowNull: true,
         type: DataTypes.INTEGER,
         field: 'Rol'
     },
-    image:{ 
-        allowNull:true,
+    image: {
+        allowNull: true,
         type: DataTypes.STRING,
         field: 'Imagen'
     },
-    birthday:{ 
-        allowNull:true,
+    birthday: {
+        allowNull: true,
         type: DataTypes.DATE,
         field: 'Fecha_nacimiento'
     },
-    question:{ 
-        allowNull:true,
+    question: {
+        allowNull: true,
         type: DataTypes.STRING,
         field: 'Pregunta'
     },
-    answers:{ 
-        allowNull:true,
+    answers: {
+        allowNull: true,
         type: DataTypes.STRING,
         field: 'Respuesta'
     },
-    numIntentos:{
+    numIntentos: {
         allowNull: true,
-        type : DataTypes.INTEGER,
+        type: DataTypes.INTEGER,
         defaultValue: 0,
-        field: 'NumIntentos' 
+        field: 'NumIntentos'
     }
 }
-  
+
 export { User, UserSchema };

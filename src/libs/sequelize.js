@@ -6,7 +6,7 @@ const sequelize = new Sequelize(process.env.MYSQL_URL,
     {
         host: process.env.MYSQLHOST,
         dialect: 'mysql',
-        define :{
+        define: {
             timestamps: false
         }
     }
