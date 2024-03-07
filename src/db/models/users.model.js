@@ -11,6 +11,26 @@ class User extends Model {
             timestamps: false
         }
     }
+
+    
+    // Metodo para encriptar el ID del Usuario antes de crear al nuevo usuario
+    static async encryptId(instance) {
+        if (instance.id_usuario) {
+            instance.id_usuario = CryptoJS.AES.encrypt(instance.id_usuario.toString(), process.env.SECRET_KEY).toString();
+        }
+    }
+
+    //Hook beforeCreate para encriptar el ID antes de que se cree al usuario
+    static init(sequelize) {
+        super.init(UserSchema, {
+            sequelize,
+            hooks: {
+                beforeCreate: async (instance, options) => {
+                    await User.encryptId(instance)
+                }
+            }
+        });
+    }
 } 
 
 const UserSchema = {
