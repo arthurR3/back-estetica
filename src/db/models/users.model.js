@@ -12,7 +12,7 @@ class User extends Model {
         }
     }
 
-    static init(sequelize) {
+    /* static init(sequelize) {
         super.init(UserSchema, {
             sequelize,
             hooks: {
@@ -30,7 +30,7 @@ class User extends Model {
             // Convertir el ID a una cadena de texto antes de encriptarlo
             instance.id_usuario = CryptoJS.AES.encrypt(instance.id_usuario.toString(), process.env.SECRET_KEY).toString();
         }
-    }
+    } */
 }
 
 const UserSchema = {

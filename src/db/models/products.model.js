@@ -21,7 +21,6 @@ const ProductSchema = {
         type: DataTypes.INTEGER,
         field:'id_producto'
     },
-   
     name: {
         allowNull: false,
         type: DataTypes.STRING,
@@ -41,6 +40,16 @@ const ProductSchema = {
         allowNull:false,
         type: DataTypes.STRING,
         field: 'Descripcion'
+    },
+    categoria:{
+        allowNull:false,
+        type: DataTypes.STRING,
+        field: 'Categoria'
+    },
+    marca: {
+        allowNull:false,
+        type: DataTypes.STRING,
+        field: 'Marca'
     },
     image:{ 
         allowNull:false,
