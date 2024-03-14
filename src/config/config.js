@@ -1,4 +1,5 @@
-
+import dotenv from 'dotenv'
+dotenv.config();
 
 const config = {
   port: process.env.PORT || 3000,
@@ -7,7 +8,6 @@ const config = {
   dbHost:  process.env.DB_HOST,
   dbName:  process.env.DB_NAME,
   dbPort:  process.env.DB_PORT,
-  dbURL :process.env.MYSQL_URL,
 }
 
 export { config }; //se quito el default

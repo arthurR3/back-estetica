@@ -36,6 +36,11 @@ const ServiceSchema = {
         type: DataTypes.FLOAT,
         field:'Precio'
     },
+    duracion: {
+        allowNull: false,
+        type: DataTypes.STRING,
+        field:'Duracion'
+    },
     image:{ 
         allowNull:true,
         type: DataTypes.STRING,

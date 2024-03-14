@@ -2,7 +2,7 @@ import UsersService from '../services/users.service.js';
 import bcrypt from 'bcrypt'
 import nodemailer from 'nodemailer'
 import ResetCodeService from '../services/codes.service.js';
-/* import jwt from 'jsonwebtoken' */
+import jwt from 'jsonwebtoken';
 const codeService = new ResetCodeService();
 const service = new UsersService();
 
@@ -16,26 +16,44 @@ const transporter = nodemailer.createTransport({
         pass: process.env.PASS
     }
 })
-const verifyToken = (req, res, next) => {
-  const token = req.headers.authorization?.split(' ')[1];
-  if (!token) {
-    return res.status(401).json({ success: false, message: 'No se proporcionó un token' });
-  }
-  jwt.verify(token, secretKey, (err, decoded) => {
-    if (err) {
-      return res.status(403).json({ success: false, message: 'Token inválido' });
-    }
-    req.userId = decoded.userId;
-    next();
-  });
-};
 
-  
 const generateCode = () => {
     let randomNumber = Math.floor(Math.random() * 100000);
     return String(randomNumber).padStart(5, '0');
 }
  
+const sendEmail = async (email, resetCode) => {
+    const mailOptions = {
+        from: process.env.USER,
+        to: email,
+        subject: 'Restablecimiento de contraseña',
+        text: `Utiliza este codigo para restablecer tu contraseña: ${resetCode}. Este codigo Expira en 3 minutos`
+    };
+    transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            console.log(error)
+        } else {
+            console.log('Email enviado : ', info.response)
+        }
+    })
+}
+
+const verifyToken = (req, res, next) => {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+        return res.status(401).json({ success: false, message: 'No se proporcionó un token' });
+    }
+    jwt.verify(token, secretKey, (err, decoded) => {
+        if (err) {
+            return res.status(403).json({ success: false, message: 'Token inválido' });
+        }
+        req.userId = decoded.userId;
+        next();
+    });
+};
+
+
+
 const get = async (req, res) => {
     try {
         const response = await service.find();
@@ -56,21 +74,6 @@ const getById = async (req, res) => {
     }
 }
 
-const sendEmail = async (email, resetCode) => {
-    const mailOptions = {
-        from: process.env.USER,
-        to: email,
-        subject: 'Restablecimiento de contraseña',
-        text: `Utiliza este codigo para restablecer tu contraseña: ${resetCode}. Este codigo Expira en 3 minutos`
-    };
-    transporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-            console.log(error)
-        } else {
-            console.log('Email enviado : ', info.response)
-        }
-    })
-}
 
 const sendCodeEmail = async (req, res) => {
     try {
@@ -120,7 +123,6 @@ const sendCodeEmail = async (req, res) => {
     }
 }
 
-
 const verificationEmail = async (req, res) => {
     try {
         const { email, resetCode } = req.body;
@@ -148,7 +150,43 @@ const verificationEmail = async (req, res) => {
         res.status(500).send({ success: false, message: error.message })
     }
 }
+// Consulta la pregunta secreta asociada al correo electrónico del usuario
+export const getSecretQuestion = async (req, res) => {
+    try {
+        const { email } = req.body;
+        const user = await service.findByEmail(email);
 
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
+        }
+        
+        return res.status(200).json({ success: true, question: user.question });
+    } catch (error) {
+        console.error('Error al obtener la pregunta secreta:', error);
+        return res.status(500).json({ success: false, message: 'Error interno del servidor' });
+    }
+};
+
+// Verifica si la respuesta proporcionada por el usuario es correcta
+export const verifySecretAnswer = async (req, res) => {
+    try {
+        const { email, answer } = req.body;
+        const user = await service.findByEmail(email);
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
+        }
+
+        if (user.answers !== answer) {
+            return res.status(400).json({ success: false, message: 'Respuesta incorrecta' });
+        }
+
+        return res.status(200).json({ success: true, message: 'Respuesta correcta' });
+    } catch (error) {
+        console.error('Error al verificar la respuesta secreta:', error);
+        return res.status(500).json({ success: false, message: 'Error interno del servidor' });
+    }
+};
 const login = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -176,17 +214,20 @@ const login = async (req, res) => {
             }
             return res.status(401).json({ success: false, message: 'Contraseña incorrecta' })
         }
-       /*  const usuario ={
+
+        const usuario ={
             idUser : response.id,
+
             nombre: response.name,
-            lastName : response.last_name1,
-            lastName2 : response.last_name2,
-            email : response.email,
+            lastName: response.last_name1,
+            lastName2: response.last_name2,
+            email: response.email,
+            telefono: response.phone,
+            rol: response.rol,
 
         }
-        const token = jwt.sign({user:usuario}, secretKey , {expiresIn:'2h'})
-        console.log('token ',token) */
-        res.json({ success: true, data: response})
+        const token = jwt.sign({ user: usuario }, secretKey, { expiresIn: '2h' })
+        res.json({ success: true, data: token })
     } catch (error) {
         res.status(500).send({ success: false, message: error.message })
     }
