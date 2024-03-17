@@ -9,7 +9,14 @@ function setupModels(sequelize) {
     Product.init(ProductSchema, Product.config(sequelize));
     Date.init(DateSchema, Date.config(sequelize));
     Service.init(ServiceSchema, Service.config(sequelize));
-    ResetCode.init(CodeSchema, ResetCode.config(sequelize))
+    ResetCode.init(CodeSchema, ResetCode.config(sequelize));
+
+    // Establecer relaciones
+    User.hasMany(Date, { foreignKey: 'UserId' }); // Un usuario puede tener muchas citas.
+    Date.belongsTo(User, { foreignKey: 'UserId' }); // Una cita pertenece a un usuario.
+
+    Service.hasMany(Date, { foreignKey: 'ServiceId' }); // Un servicio puede tener muchas citas.
+    Date.belongsTo(Service, { foreignKey: 'ServiceId' }); // Una cita pertenece a un servicio.
 }
 
 export default setupModels;
