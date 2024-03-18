@@ -31,8 +31,8 @@ function setupModels(sequelize) {
     User.belongsTo(Role, { foreignKey: 'id_role' }); // Un usuario pertenece a un rol.
     Role.hasMany(User, { foreignKey: 'id_role' }); // Un rol puede tener muchos usuarios.
   
-    User.belongsTo(Frequency, { foreignKey: 'id_frecuency' }); // Un usuario pertenece a una frecuencia.
-    Frequency.hasMany(User, { foreignKey: 'id_frecuency' }); // Una frecuencia puede tener muchos usuarios.
+    User.belongsTo(Frequency, { foreignKey: 'id_frequency' }); // Un usuario pertenece a una frecuencia.
+    Frequency.hasMany(User, { foreignKey: 'id_frequency' }); // Una frecuencia puede tener muchos usuarios.
 
     Product.belongsTo(Brand, { foreignKey: 'id_brand' }); // Un producto pertenece a una marca.
     Brand.hasMany(Product, { foreignKey: 'id_brand' }); // Una marca puede tener muchos productos.
