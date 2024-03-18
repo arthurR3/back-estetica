@@ -1,51 +1,56 @@
 import { Model, DataTypes, Sequelize } from 'sequelize';
 
-const SERVICE_TABLE = 'servicio';
+const SUPPLIER_TABLE = 'proveedor';
 
-class Service extends Model {
+class Supplier extends Model {
     static config(sequelize) {
         return {
             sequelize,
-            tableName: SERVICE_TABLE,
-            modelName: 'Servicio',
+            tableName: SUPPLIER_TABLE,
+            modelName: 'Proveedores',
             timestamps: false
         }
     }
 } 
 
-const ServiceSchema = {
+const SupplierSchema = {
     id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: DataTypes.INTEGER,
-        field:'id_servicio'
+        field:'id_proveedor'
     },
     name: {
         allowNull: false,
         type: DataTypes.STRING,
         field:'Nombre'
     },
-    description: {
+    last_name1: {
         allowNull: false,
         type: DataTypes.STRING,
-        field:'Descripcion'
+        field:'ApellidoP'
     },
-    price: {
-        allowNull: false,
-        type: DataTypes.FLOAT,
-        field:'Precio'
-    },
-    duration: {
+    last_name2: {
         allowNull: false,
         type: DataTypes.STRING,
-        field:'Duracion'
+        field:'ApellidoM'
     },
-    image:{ 
+    address:{ 
         allowNull:true,
         type: DataTypes.STRING,
-        field: 'Imagen'
+        field: 'Direccion'
+    },
+    phone:{
+        allowNull: false,
+        type: DataTypes.STRING,
+        field: 'Telefono'
+    },
+    email:{ 
+        allowNull:false,
+        type: DataTypes.STRING,
+        field: 'Correo'
     }
 }
   
-export { Service, ServiceSchema };
+export { Supplier, SupplierSchema };

@@ -21,12 +21,12 @@ const DateSchema = {
         type: DataTypes.INTEGER,
         field: 'id_cita'
     },
-    UserId: { //llave foránea
+    id_user: { //llave foránea
         allowNull: false,
         type: DataTypes.INTEGER,
         field: 'id_usuario' // Nombre del campo en la base de datos
     },
-    ServiceId: { //llave foránea
+    id_service: { //llave foránea
         allowNull: false,
         type: DataTypes.INTEGER,
         field: 'id_servicio' // Nombre del campo en la base de datos

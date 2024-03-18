@@ -21,7 +21,21 @@ const ProductSchema = {
         type: DataTypes.INTEGER,
         field:'id_producto'
     },
-   
+    id_category: { //llave foránea
+        allowNull: false,
+        type: DataTypes.INTEGER,
+        field: 'id_categoria' // Nombre del campo en la bd
+    },
+    id_brand: { //llave foránea
+        allowNull: false,
+        type: DataTypes.INTEGER,
+        field: 'id_marca' // Nombre del campo en la bd
+    },
+    id_supplier: { //llave foránea
+        allowNull: false,
+        type: DataTypes.INTEGER,
+        field: 'id_proveedor' // Nombre del campo en la bd
+    },
     name: {
         allowNull: false,
         type: DataTypes.STRING,
