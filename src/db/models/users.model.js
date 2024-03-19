@@ -41,6 +41,11 @@ const UserSchema = {
         type: DataTypes.INTEGER,
         field: 'id_usuario'
     },
+    id_role: { //llave foránea
+        allowNull: false,
+        type: DataTypes.INTEGER,
+        field: 'id_rol' // Nombre del campo en la bd
+    },
     id_frequency: { //llave foránea
         allowNull: false,
         type: DataTypes.INTEGER,
