@@ -214,8 +214,10 @@ const login = async (req, res) => {
             }
             return res.status(401).json({ success: false, message: 'Contraseña incorrecta' })
         }
-        const usuario = {
-            idUser: response.id,
+
+        const usuario ={
+            idUser : response.id,
+
             nombre: response.name,
             lastName: response.last_name1,
             lastName2: response.last_name2,
