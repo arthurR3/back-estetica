@@ -8,7 +8,7 @@ dotenv.config();
 const port = process.env.PORT || 3000;
 
 const corsOptions = {
-    origin: 'http://localhost:3000',  // Reemplaza con la URL de tu frontend
+    origin: ['https://estetica-principal.netlify.app', 'http://localhost:3000'],  // Reemplaza con la URL de tu frontend
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
     optionsSuccessStatus: 204,
