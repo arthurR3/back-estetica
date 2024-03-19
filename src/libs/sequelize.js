@@ -22,7 +22,7 @@ const sequelize = new Sequelize(process.env.MYSQL_URL,
         host: config.dbHost,
         dialect: 'mysql',
     }, 
-);*/
+); */
 (async () => {
     try {
         await sequelize.sync();
