@@ -221,6 +221,7 @@ const login = async (req, res) => {
             lastName2: response.last_name2,
             email: response.email,
             telefono: response.phone,
+            direccion: response.address,
             rol: response.rol,
 
         }
