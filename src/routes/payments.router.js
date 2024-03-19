@@ -1,6 +1,6 @@
 import { Router } from 'express';
 const router = Router(); 
-import { get, getById, create, update, _delete } from '../controllers/brands.controller.js';
+import { get, getById, create, update, _delete } from '../controllers/payments.controller.js';
 
 router
     .get('/', get )

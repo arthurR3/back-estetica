@@ -8,6 +8,7 @@ import { Frequency, FrequencySchema } from './frequencies.model.js';
 import { Brand, BrandSchema } from './brands.model.js';
 import { Category, CategorySchema } from './categories.model.js';
 import { Supplier, SupplierSchema } from './suppliers.model.js';
+import { Payment, PaymentSchema } from './payments.model.js';
 
 function setupModels(sequelize) {
     User.init(UserSchema, User.config(sequelize));
@@ -19,6 +20,7 @@ function setupModels(sequelize) {
     Brand.init(BrandSchema, Brand.config(sequelize));
     Category.init(CategorySchema, Category.config(sequelize));
     Supplier.init(SupplierSchema, Supplier.config(sequelize));
+    Payment.init(PaymentSchema, Payment.config(sequelize));
     ResetCode.init(CodeSchema, ResetCode.config(sequelize));
 
     // Establecer relaciones
@@ -27,6 +29,9 @@ function setupModels(sequelize) {
 
     Service.hasMany(Date, { foreignKey: 'id_service' }); // Un servicio puede tener muchas citas.
     Date.belongsTo(Service, { foreignKey: 'id_service' }); // Una cita pertenece a un servicio.
+
+    Payment.hasMany(Date, { foreignKey: 'id_metodo_pago' }); // Un metodo_pago puede tener muchas citas.
+    Date.belongsTo(Payment, { foreignKey: 'id_metodo_pago' }); // Una cita pertenece a un metodo_pago.
 
     User.belongsTo(Role, { foreignKey: 'id_role' }); // Un usuario pertenece a un rol.
     Role.hasMany(User, { foreignKey: 'id_role' }); // Un rol puede tener muchos usuarios.

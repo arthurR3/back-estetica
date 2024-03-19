@@ -31,6 +31,11 @@ const DateSchema = {
         type: DataTypes.INTEGER,
         field: 'id_servicio' // Nombre del campo en la base de datos
     },
+    id_payment: { //llave foránea
+        allowNull: false,
+        type: DataTypes.INTEGER,
+        field: 'id_metodo_pago' // Nombre del campo en la base de datos
+    },
     date: {
         allowNull: false,
         type: DataTypes.DATE,
