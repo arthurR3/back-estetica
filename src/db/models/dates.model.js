@@ -11,7 +11,7 @@ class Date extends Model {
             timestamps: false
         }
     }
-} 
+}
 
 const DateSchema = {
     id: {
@@ -19,50 +19,38 @@ const DateSchema = {
         autoIncrement: true,
         primaryKey: true,
         type: DataTypes.INTEGER,
-        field:'id_cita'
+        field: 'id_cita'
     },
-    id_servicio: {
+    id_user: { //llave foránea
         allowNull: false,
         type: DataTypes.INTEGER,
-        field: 'id_servicio',
-        references: {
-            model: 'Servicio', // Tabla relacionada
-            key: 'id_servicio' // Nombre clave foránea
-        }
+        field: 'id_usuario' // Nombre del campo en la base de datos
     },
-    id_usuario: {
+    id_service: { //llave foránea
         allowNull: false,
         type: DataTypes.INTEGER,
-        field: 'id_usuario',
-        references: {
-            model: 'Usuario', // Tabla relacionada
-            key: 'id_usuario' // Nombre clave foránea
-        }
+        field: 'id_servicio' // Nombre del campo en la base de datos
     },
-    id_forma_pago: {
+    id_payment: { //llave foránea
         allowNull: false,
         type: DataTypes.INTEGER,
-        field: 'id_forma_pago',
-        references: {
-            model: 'FormaPago', // Tabla relacionada
-            key: 'id_forma_pago' // Nombre clave foránea
-        }
+        field: 'id_metodo_pago' // Nombre del campo en la base de datos
     },
     date: {
         allowNull: false,
         type: DataTypes.DATE,
-        field:'Fecha'
+        field: 'Fecha'
     },
     time: {
         allowNull: false,
         type: DataTypes.TIME,
-        field:'Hora'
+        field: 'Hora'
     },
     total: {
         allowNull: false,
         type: DataTypes.FLOAT,
-        field:'Total'
+        field: 'Total'
     }
 }
-  
+
 export { Date, DateSchema };

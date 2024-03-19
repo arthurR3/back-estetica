@@ -1,17 +1,41 @@
-import  models  from '../libs/sequelize.js';
+import models from '../libs/sequelize.js';
 import { Product } from '../db/models/products.model.js';
+import { Category } from '../db/models/categories.model.js';
+import { Brand } from '../db/models/brands.model.js';
 
 class ProductsService {
 
     constructor() { }
 
     async find() {
-        const res = await Product.findAll();
+        const res = await Product.findAll({
+            include: [
+                {
+                    model: Category, // Modelo relacionado
+                    attributes: ['name'], // Atributos que se quiere obtener
+                },
+                {
+                    model: Brand, // Modelo relacionado
+                    attributes: ['name'], // Atributos que se quiere obtener
+                },
+            ],
+        });
         return res;
     }
 
     async findOne(id) {
-        const res = await Product.findByPk(id);
+        const res = await Product.findByPk(id, {
+            include: [
+                {
+                    model: Category, // Modelo relacionado
+                    attributes: ['name'], // Atributos que se quiere obtener
+                },
+                {
+                    model: Brand, // Modelo relacionado
+                    attributes: ['name'], // Atributos que se quiere obtener
+                },
+            ],
+        });
         return res;
     }
 
