@@ -31,6 +31,11 @@ const UserSchema = {
         type: DataTypes.INTEGER,
         field: 'id_frecuencia' // Nombre del campo en la bd
     },
+    id_address: { //llave foránea
+        allowNull: false,
+        type: DataTypes.INTEGER,
+        field: 'id_direccion' // Nombre del campo en la base de datos
+    },
     name: {
         allowNull: false,
         type: DataTypes.STRING,
@@ -56,11 +61,6 @@ const UserSchema = {
         type: DataTypes.STRING,
         field: 'Contraseña'
     },
-    address:{ 
-        allowNull:true,
-        type: DataTypes.STRING,
-        field: 'Direccion'
-    },
     phone:{
         allowNull: false,
         type: DataTypes.STRING,
@@ -70,11 +70,6 @@ const UserSchema = {
         allowNull:false,
         type: DataTypes.STRING,
         field: 'CP'
-    },
-    rol:{ 
-        allowNull:true,
-        type: DataTypes.INTEGER,
-        field: 'Rol'
     },
     image:{ 
         allowNull:true,

@@ -1,12 +1,15 @@
-
 import { Sequelize } from 'sequelize';
 import { config } from '../config/config.js';
 import setupModels from './../db/models/index.js';
-const sequelize = new Sequelize('mysql://root:PKqDiJNliNZwyDKafYGnVUawBbJxqiXM@monorail.proxy.rlwy.net:20191/railway',
+
+const sequelize = new Sequelize(
+    'db_estetica', // name database
+    'root', // user database
+    '', // password database,
     {
-        host: process.env.MYSQLHOST,
+        host: 'localhost',
         dialect: 'mysql',
-        define :{
+        define: {
             timestamps: false
         }
     }
