@@ -91,8 +91,8 @@ const UserSchema = {
         type: DataTypes.STRING,
         field: 'CP'
     },
-    image:{ 
-        allowNull:true,
+    image: {
+        allowNull: true,
         type: DataTypes.STRING,
         field: 'Imagen'
     },

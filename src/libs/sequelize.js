@@ -4,12 +4,9 @@ import dotenv from 'dotenv';
 import { config } from '../config/config.js';
 import setupModels from './../db/models/index.js';
 
-const sequelize = new Sequelize(
-    'db_estetica', // name database
-    'root', // user database
-    '', // password database,
+const sequelize = new Sequelize(process.env.MYSQL_URL,
     {
-        host: 'localhost',
+        host: process.env.MYSQLHOST,
         dialect: 'mysql',
         define: {
             timestamps: false
