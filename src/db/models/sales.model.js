@@ -1,66 +1,56 @@
 import { Model, DataTypes, Sequelize } from 'sequelize';
 
-const DATE_TABLE = 'cita';
+const SALE_TABLE = 'venta';
 
-class Date extends Model {
+class Sale extends Model {
     static config(sequelize) {
         return {
             sequelize,
-            tableName: DATE_TABLE,
-            modelName: 'Citas',
+            tableName: SALE_TABLE,
+            modelName: 'Ventas',
             timestamps: false
         }
     }
 }
 
-const DateSchema = {
+const SaleSchema = {
     id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: DataTypes.INTEGER,
-        field: 'id_cita'
+        field: 'id_venta'
     },
     id_user: { //llave foránea
         allowNull: false,
         type: DataTypes.INTEGER,
         field: 'id_usuario' // Nombre del campo en la base de datos
     },
-    id_service: { //llave foránea
-        allowNull: false,
-        type: DataTypes.INTEGER,
-        field: 'id_servicio' // Nombre del campo en la base de datos
-    },
     id_payment: { //llave foránea
         allowNull: false,
         type: DataTypes.INTEGER,
         field: 'id_metodo_pago' // Nombre del campo en la base de datos
+    },
+    id_address: { //llave foránea
+        allowNull: false,
+        type: DataTypes.INTEGER,
+        field: 'id_direccion' // Nombre del campo en la base de datos
+    },
+    shipping_status:{ 
+        allowNull:false,
+        type: DataTypes.STRING,
+        field: 'Estado_envio'
+    },
+    total: {
+        allowNull: false,
+        type: DataTypes.FLOAT,
+        field: 'Total'
     },
     date: {
         allowNull: false,
         type: DataTypes.DATE,
         field: 'Fecha'
     },
-    time: {
-        allowNull: false,
-        type: DataTypes.TIME,
-        field: 'Hora'
-    },
-    paid: {
-        allowNull: false,
-        type: DataTypes.FLOAT,
-        field: 'Pagado'
-    },
-    remaining: {
-        allowNull: false,
-        type: DataTypes.FLOAT,
-        field: 'Restante'
-    },
-    payment_status:{ 
-        allowNull:false,
-        type: DataTypes.STRING,
-        field: 'Estado_pago'
-    },
 }
 
-export { Date, DateSchema };
+export { Sale, SaleSchema };
