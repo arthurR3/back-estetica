@@ -91,11 +91,6 @@ const UserSchema = {
         type: DataTypes.STRING,
         field: 'CP'
     },
-    rol: {
-        allowNull: true,
-        type: DataTypes.INTEGER,
-        field: 'id_rol' // Nombre del campo en la bd
-    },
     image: {
         allowNull: true,
         type: DataTypes.STRING,
