@@ -13,6 +13,14 @@ class PaymentsService {
         const res = await Payment.findByPk(id);
         return res;
     }
+    async findByName(payment){
+        const res = await Payment.findOne({
+            where: {
+                tipo: payment
+            }
+        });
+        return res;
+    }
 
     async create(data) {
         const res = await Payment.create(data);
