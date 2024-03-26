@@ -13,6 +13,8 @@ import paymentsRouter from './payments.router.js'
 import addressesRouter from './addresses.router.js'
 import salesRouter from './sales.router.js'
 import salesDetailRouter from './salesDetail.router.js'
+import cartsRouter from './carts.router.js'
+import cartsDetailRouter from './cartsDetail.router.js'
 
 function routerApi(app) {
   const router = Router();
@@ -30,6 +32,8 @@ function routerApi(app) {
   router.use('/address', addressesRouter);
   router.use('/sales', salesRouter);
   router.use('/salesDetail', salesDetailRouter);
+  router.use('/carts', cartsRouter);
+  router.use('/cartsDetail', cartsDetailRouter);
 }
 
 export default routerApi;
