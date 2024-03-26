@@ -91,6 +91,12 @@ const UserSchema = {
         type: DataTypes.STRING,
         field: 'CP'
     },
+    //Provisional este campo
+    address :{
+        allowNull: true,
+        type: DataTypes.STRING,
+        field: 'Direccion'
+    },
     image: {
         allowNull: true,
         type: DataTypes.STRING,

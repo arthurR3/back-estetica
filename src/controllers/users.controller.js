@@ -217,7 +217,6 @@ const login = async (req, res) => {
 
         const usuario ={
             idUser : response.id,
-
             nombre: response.name,
             lastName: response.last_name1,
             lastName2: response.last_name2,
