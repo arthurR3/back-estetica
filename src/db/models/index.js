@@ -12,6 +12,8 @@ import { Payment, PaymentSchema } from './payments.model.js';
 import { Address, AddressSchema } from './addresses.model.js';
 import { Sale, SaleSchema } from './sales.model.js';
 import { SaleDetail, SaleDetailSchema } from './salesDetail.model.js';
+import { Cart, CartSchema } from './carts.model.js';
+import { CartDetail, CartDetailSchema } from './cartsDetail.model.js';
 
 function setupModels(sequelize) {
     User.init(UserSchema, User.config(sequelize));
@@ -27,6 +29,8 @@ function setupModels(sequelize) {
     Address.init(AddressSchema, Address.config(sequelize));
     Sale.init(SaleSchema, Sale.config(sequelize));
     SaleDetail.init(SaleDetailSchema, SaleDetail.config(sequelize));
+    Cart.init(CartSchema, Cart.config(sequelize));
+    CartDetail.init(CartDetailSchema, CartDetail.config(sequelize));
     ResetCode.init(CodeSchema, ResetCode.config(sequelize));
 
     // Establecer relaciones
@@ -66,27 +70,22 @@ function setupModels(sequelize) {
     Sale.belongsTo(Address, { foreignKey: 'id_address' }); // Una venta pertenece a una direccion.
     Address.hasMany(Sale, { foreignKey: 'id_address' }); // Una direccion puede tener muchas ventas.
 
-    // Sale.hasMany(SaleDetail, { as: 'salesDetails' }); // Una venta puede tener varios detalles de venta
-    // SaleDetail.belongsTo(Sale); // Un detalle de venta pertenece a una venta
-
-    // Product.belongsToMany(Sale, { through: SaleDetail, as: 'salesProducts' }); // Un producto puede estar en varias ventas a través de DetalleVenta
-    // Sale.belongsToMany(Product, { through: SaleDetail, as: 'productsSales' }); // Una venta puede contener varios productos a través de DetalleVenta
-
     // Define la relación entre Venta y DetalleVenta
-    Sale.hasMany(SaleDetail, {
-        foreignKey: 'id_sale',
-    });
-    SaleDetail.belongsTo(Sale, {
-        foreignKey: 'id_sale',
-    });
+    SaleDetail.belongsTo(Sale, { foreignKey: 'id_sale', });
+    Sale.hasMany(SaleDetail, { foreignKey: 'id_sale', });
 
     // Define la relación entre Producto y DetalleVenta
-    Product.hasMany(SaleDetail, {
-        foreignKey: 'id_product',
-    });
-    SaleDetail.belongsTo(Product, {
-        foreignKey: 'id_product',
-    });
+    SaleDetail.belongsTo(Product, { foreignKey: 'id_product', });
+    Product.hasMany(SaleDetail, { foreignKey: 'id_product', });
+
+    Cart.belongsTo(User, { foreignKey: 'id_user' }); // Un carrito pertenece a un usuario.
+    User.hasOne(Cart, { foreignKey: 'id_user' }); // Un carrito puede tener un usuario.
+
+    CartDetail.belongsTo(Cart, { foreignKey: 'id_cart', });
+    Cart.hasMany(CartDetail, { foreignKey: 'id_cart', });
+
+    CartDetail.belongsTo(Product, { foreignKey: 'id_product', });
+    Product.hasMany(CartDetail, { foreignKey: 'id_product', });
 }
 
 export default setupModels;

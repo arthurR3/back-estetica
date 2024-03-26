@@ -1,31 +1,21 @@
-import models from '../libs/sequelize.js';
-import { User } from '../db/models/users.model.js';
+import { CartDetail } from "../db/models/cartsDetail.model.js";
 
-class UsersService {
+class CartsDetailService {
 
     constructor() { }
 
     async find() {
-        const res = await User.findAll();
+        const res = await CartDetail.findAll();
         return res;
     }
 
     async findOne(id) {
-        const res = await User.findByPk(id);
-        return res;
-    }
-
-    async findByEmail(email) {
-        const res = await User.findOne({
-            where: {
-                email: email,
-            },
-        });
+        const res = await CartDetail.findByPk(id);
         return res;
     }
 
     async create(data) {
-        const res = await User.create(data);
+        const res = await CartDetail.create(data);
         return res;
     }
 
@@ -43,4 +33,4 @@ class UsersService {
 
 }
 
-export default UsersService;
+export default CartsDetailService;

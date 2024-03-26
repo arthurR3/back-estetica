@@ -61,6 +61,11 @@ const DateSchema = {
         type: DataTypes.STRING,
         field: 'Estado_pago'
     },
+    date_status:{ 
+        allowNull:false,
+        type: DataTypes.STRING,
+        field: 'Estado_cita'
+    },
 }
 
 export { Date, DateSchema };

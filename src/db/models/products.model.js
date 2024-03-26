@@ -60,17 +60,7 @@ const ProductSchema = {
         allowNull:false,
         type: DataTypes.STRING,
         field: 'Imagen'
-    },
-    categoria:{
-        allowNull:true,
-        type: DataTypes.STRING,
-        field: 'Categoria'
-    },
-    marca: {
-        allowNull:true,
-        type: DataTypes.STRING,
-        field: 'Marca'
-    },
+    }
 }
   
 export { Product, ProductSchema };
