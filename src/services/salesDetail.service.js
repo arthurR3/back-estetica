@@ -19,9 +19,9 @@ class SalesDetailService {
 
         // Insertar los detalles de venta en la tabla DetalleVenta
         const details = data.map(producto => ({
-            amount: producto.amount,
-            unit_price: producto.unit_price,
-            subtotal: producto.amount * producto.unit_price,
+            amount: producto.quantify,
+            unit_price: producto.price,
+            subtotal: producto.quantify * producto.price,
             id_sale: VentaID,
             id_product: producto.id
         }));

@@ -6,7 +6,7 @@ router
     .get('/', get )
     .get('/:id', getById )
     .post('/', create )
-    .put('/:id', update )
+    .put('/updateCart/:id', update )
     .delete('/:id', _delete );
 
 export default router;
