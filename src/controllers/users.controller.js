@@ -5,6 +5,7 @@
     import LogsServices from '../services/logs.services.js';
     import AddressesService from '../services/addresses.service.js';
     import jwt from 'jsonwebtoken';
+
     const codeService = new ResetCodeService();
     const addressesService = new AddressesService();
     const service = new UsersService();
@@ -227,6 +228,7 @@
         try {
             const { email, password } = req.body;
             const response = await service.findByEmail(email);
+            const addressG = await addressesService.findOne(response.id)
             if (!response) {
                 return res.status(401).json({ success: false, message: 'Correo electronico incorrecto!' })
             }
@@ -259,8 +261,13 @@
                 lastName2: response.last_name2,
                 email: response.email,
                 telefono: response.phone,
-                direccion: response.address,
                 rol: response.rol,
+                address: {
+                    muncipio : addressG.municipality,
+                    colonia : addressG.cologne,
+                    calle : addressG.street,
+                    cp : addressG.cp
+                }
 
             }
             const token = jwt.sign({ user: usuario }, secretKey, { expiresIn: '2h' })
@@ -271,6 +278,27 @@
         }
     }
 
+    
+    const updatePassword2 = async (req, res) => {
+        try {
+            const { oldPassword, newPassword } = req.body;
+            const {id} = req.params;
+            const user = await service.findOne(id);
+            if (!user) {
+                return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
+            }
+            const isPassword = await bcrypt.compare(oldPassword, user.password);
+            if(!isPassword){
+                return res.status(400).json({ success: false, message: 'La contraseña Old (Anterior) no es correcta!, Intente de Nuevo' });
+            }
+            const hashPassword = await bcrypt.hash(newPassword, saltRounds);
+            await service.update(user.id, { password: hashPassword });
+            await logService.logSensitiveDataUpdate(req.ip, user.email, ' Actualizó su contraseña correctamente') 
+            res.json({ success: true, message: 'Contraseña actualizada correctamente' });
+        } catch (error) {
+            res.status(500).send({ success: false, message: error.message });
+        }
+    }
     const updatePassword = async (req, res) => {
         try {
             const { email, newPassword } = req.body;
@@ -282,7 +310,7 @@
 
             const hashPassword = await bcrypt.hash(newPassword, saltRounds);
             await service.update(user.id, { password: hashPassword });
-            await logService.logSensitiveDataUpdate(req.ip, email, ' Actualizo su contraseña') 
+            await logService.logSensitiveDataUpdate(req.ip, email, ' Restableció su contraseña') 
             res.json({ success: true, message: 'Contraseña actualizada correctamente' });
         } catch (error) {
             res.status(500).send({ success: false, message: error.message });
@@ -333,5 +361,5 @@
     }
 
     export {
-        create, get, getById, update, _delete, login, sendConfirmationEmail, sendCodeEmail, verificationEmail, updatePassword
+        create, get, getById, update, _delete, login, sendConfirmationEmail, sendCodeEmail, verificationEmail, updatePassword, updatePassword2
     };

@@ -43,7 +43,7 @@ const DateSchema = {
     },
     time: {
         allowNull: false,
-        type: DataTypes.TIME,
+        type: DataTypes.STRING,
         field: 'Hora'
     },
     paid: {
