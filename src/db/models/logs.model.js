@@ -24,7 +24,7 @@ const LogSchema = {
     ip: {
         allowNull: false,
         type: DataTypes.STRING,
-        field:'Nombre'
+        field:'Direccion'
     },
     date:{ 
         allowNull:false,
@@ -39,8 +39,8 @@ const LogSchema = {
     action_description:{ 
         allowNull:true,
         type: DataTypes.STRING,
-        field: 'Pregunta'
+        field: 'Accion'
     }
 }
   
-export { User, UserSchema };
+export { Log, LogSchema };

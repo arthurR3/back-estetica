@@ -1,4 +1,5 @@
 import { User, UserSchema } from './users.model.js';
+import { UserNR, UserNoRegistredSchema } from './usersNoRegistred.model.js';
 import { Product, ProductSchema } from './products.model.js'
 import { Date, DateSchema } from './dates.model.js';
 import { Service, ServiceSchema } from './services.model.js';
@@ -14,9 +15,11 @@ import { Sale, SaleSchema } from './sales.model.js';
 import { SaleDetail, SaleDetailSchema } from './salesDetail.model.js';
 import { Cart, CartSchema } from './carts.model.js';
 import { CartDetail, CartDetailSchema } from './cartsDetail.model.js';
+import { Log, LogSchema } from './logs.model.js';
 
 function setupModels(sequelize) {
     User.init(UserSchema, User.config(sequelize));
+    UserNR.init(UserNoRegistredSchema, UserNR.config(sequelize));
     Product.init(ProductSchema, Product.config(sequelize));
     Date.init(DateSchema, Date.config(sequelize));
     Service.init(ServiceSchema, Service.config(sequelize));
@@ -32,6 +35,7 @@ function setupModels(sequelize) {
     Cart.init(CartSchema, Cart.config(sequelize));
     CartDetail.init(CartDetailSchema, CartDetail.config(sequelize));
     ResetCode.init(CodeSchema, ResetCode.config(sequelize));
+    Log.init(LogSchema, Log.config(sequelize));
 
     // Establecer relaciones
     Date.belongsTo(User, { foreignKey: 'id_user' }); // Una cita pertenece a un usuario.
@@ -49,8 +53,8 @@ function setupModels(sequelize) {
     User.belongsTo(Frequency, { foreignKey: 'id_frequency' }); // Un usuario pertenece a una frecuencia.
     Frequency.hasMany(User, { foreignKey: 'id_frequency' }); // Una frecuencia puede tener muchos usuarios.
 
-    User.belongsTo(Address, { foreignKey: 'id_address' }); // Un usuario pertenece a una direccion.
-    Address.hasMany(User, { foreignKey: 'id_address' }); // Una direccion puede tener muchos usuarios.
+    Address.belongsTo(User, { foreignKey: 'id_user' }); // Un usuario pertenece a una direccion.
+    User.hasMany(Address, { foreignKey: 'id_user' }); // Una direccion puede tener muchos usuarios.
 
     Product.belongsTo(Brand, { foreignKey: 'id_brand' }); // Un producto pertenece a una marca.
     Brand.hasMany(Product, { foreignKey: 'id_brand' }); // Una marca puede tener muchos productos.

@@ -34,6 +34,7 @@ const getById = async (req, res) => {
                 image : product.image, 
                 quantify: detail.amount,
                 price: detail.unit_price,
+                amout: product.amount,
             });
         }
         res.json({success: true, data: products});
@@ -57,7 +58,7 @@ const update = async (req, res) => {
         const userId = req.params.id;
         const products = req.body;
         let idCart;
-        console.log(products.state.quantify)
+        console.log(products.state)
         let cart = await cartService.findOne(userId);
         if (!cart) {
             // Si no existe un carrito activo, crea uno nuevo
@@ -71,8 +72,11 @@ const update = async (req, res) => {
         idCart = cart.dataValues.id;
         // Recorrer los productos recibidos desde el frontend
         for (const product of products.state) {
-            const { id, quantify, price } = product;
+            const { id, quantify, price, amount } = product;
             // Verifica si el producto ya esta en el carrito
+            /* if (quantify > amount) {
+                return res.status(400).json({ success: false, message: 'La cantidad solicitada supera el stock disponible' });
+            } */
             const cartDetail = await CartDetailService.findOneProduct(idCart, id);
             if (cartDetail != null) {
                 // El producto ya está en el carrito, actualizar la cantidad y el precio unitario
@@ -104,14 +108,14 @@ const _delete = async (req, res) => {
         let cart = await cartService.findOne(id)
         const idCart = cart.dataValues.id;
         // Borrar todos los productos del carrito
-        const cartDetail = await CartDetailService.findOne(idCart);
+        const cartDetail = await CartDetailService.findIdCart(idCart);
 
         console.log(cartDetail)
-        /* for (const detail of cartDetail) {
+        for (const detail of cartDetail) {
             await CartDetailService.delete(detail.dataValues.id);
         }
 
-        const response = await cart.delete(id); */
+        const response = await cartService.delete(id);
         res.json(response);
     } catch (error) {
         res.status(500).send({ success: false, message: error.message });

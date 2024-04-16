@@ -10,7 +10,12 @@ class AddressesService {
     }
 
     async findOne(id) {
-        const res = await Address.findByPk(id);
+        const res = await Address.findOne({
+            where: {
+                id_user: id
+            }
+        }
+        );
         return res;
     }
 

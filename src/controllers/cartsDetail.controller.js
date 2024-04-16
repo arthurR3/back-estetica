@@ -45,6 +45,7 @@ const update = async (req, res) => {
 const _delete = async (req, res) => {
     try {
         const { id } = req.params;
+        const {idProduct}  = req.body
         const response = await cartDetail.delete(id);
         res.json(response);
     } catch (error) {

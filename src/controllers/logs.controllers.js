@@ -1,21 +1,21 @@
-import ProductsService from "../services/products.service.js";
-import SalesDetailService from "../services/salesDetail.service.js";
-const saleDetail = new SalesDetailService();
-const productService = new ProductsService();
+import LogsServices from '../services/logs.services'
+
+const logService = new LogsServices();
+
 const get = async (req, res) => {
     try {
-        const response = await saleDetail.find();
+        const response = await logService.find();
         return res.json(response);
-
-    } catch (error) { 
+        
+    } catch (error) {
         res.status(500).send({ success: false, message: error.message });
     }
-}
 
-const getById = async (req, res) => {
+}
+const getById = async (req, res ) => {
     try {
         const { id } = req.params;
-        const response = await saleDetail.findOne(id);
+        const response = await logService.findOne(id);
         return res.json(response);
     } catch (error) {
         res.status(500).send({ success: false, message: error.message });
@@ -24,8 +24,7 @@ const getById = async (req, res) => {
 
 const create = async (req, res) => {
     try {
-        const response = await saleDetail.create(req.body);
-        
+        const response = await logService.create(req.body);
         res.json({ success: true, data: response });
     } catch (error) {
         res.status(500).send({ success: false, message: error.message });
@@ -35,19 +34,17 @@ const create = async (req, res) => {
 const update = async (req, res) => {
     try {
         const { id } = req.params;
-        const body = req.body;
-        const response = await saleDetail.update(id, body);
-        res.json(response);
+        const response = await logService.update(id, req.body);
+        return res.json(response);
     } catch (error) {
         res.status(500).send({ success: false, message: error.message });
     }
 }
-
-const _delete = async (req, res) => {
+const _delete = (req, res) => {
     try {
         const { id } = req.params;
-        const response = await saleDetail.delete(id);
-        res.json(response);
+        const response = logService.delete(id);
+        return res.json(response);
     } catch (error) {
         res.status(500).send({ success: false, message: error.message });
     }

@@ -1,5 +1,7 @@
 import { Model, DataTypes, Sequelize } from 'sequelize';
+import ProductsService from '../../services/products.service.js';
 
+const productsService = new ProductsService();
 const SALE_DETAIL_TABLE = 'detalle_venta';
 
 class SaleDetail extends Model {
@@ -9,7 +11,7 @@ class SaleDetail extends Model {
             tableName: SALE_DETAIL_TABLE,
             modelName: 'Detalle_ventas',
             timestamps: false
-        }
+        };
     }
 }
 

@@ -1,53 +1,51 @@
 import { Model, DataTypes, Sequelize } from 'sequelize';
 
-const ADDRESS_TABLE = 'direccion';
+const USER_TABLE = 'usuariosNR';
 
-class Address extends Model {
+class UserNR extends Model {
     static config(sequelize) {
         return {
             sequelize,
-            tableName: ADDRESS_TABLE,
-            modelName: 'Direcciones',
+            tableName: USER_TABLE,
+            modelName: 'UsuariosNR',
             timestamps: false
         }
     }
-} 
+}
 
-const AddressSchema = {
+const UserNoRegistredSchema = {
     id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: DataTypes.INTEGER,
-        field:'id_direccion'
+        field: 'id_usuario_no_registrado'
     },
-    id_user:{
-        // llave foranea
-        allowNull: false,
-        type: DataTypes.INTEGER,
-        field:'id_usuario'
-
-    },
-    municipality: {
+    name: {
         allowNull: false,
         type: DataTypes.STRING,
-        field:'Municipio'
+        field: 'Nombre'
     },
-    cologne: {
+    last_name1: {
         allowNull: false,
         type: DataTypes.STRING,
-        field:'Colonia'
+        field: 'Apellido_Paterno'
     },
-    street: {
+    last_name2: {
         allowNull: false,
         type: DataTypes.STRING,
-        field:'Calle'
+        field: 'Apellido_Materno'
     },
-    cp: {
+    phone: {
         allowNull: false,
         type: DataTypes.STRING,
-        field:'CP'
-    }
+        field: 'Telefono'
+    },
+    email: {
+        allowNull: false,
+        type: DataTypes.STRING,
+        field: 'Correo'
+    },
 }
-  
-export { Address, AddressSchema };
+
+export { UserNR, UserNoRegistredSchema };
