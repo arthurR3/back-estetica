@@ -44,7 +44,7 @@ const DateSchema = {
     time: {
         allowNull: false,
         type: DataTypes.STRING,
-        field: 'Hora'
+        field: 'Horario'
     },
     paid: {
         allowNull: false,

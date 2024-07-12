@@ -1,3 +1,4 @@
+import { Category } from '../db/models/categories.model.js';
 import { Service } from "../db/models/services.model.js";
 
 class ServicesService {
@@ -5,7 +6,14 @@ class ServicesService {
     constructor() { }
 
     async find() {
-        const res = await Service.findAll();
+        const res = await Service.findAll({
+            include: [
+                {
+                    model: Category, // Modelo relacionado
+                    attributes: ['name'], // Atributos que se quiere obtener
+                },
+            ],
+        });
         return res;
     }
 

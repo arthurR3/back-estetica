@@ -40,7 +40,7 @@ function setupModels(sequelize) {
     // Establecer relaciones
     Date.belongsTo(User, { foreignKey: 'id_user' }); // Una cita pertenece a un usuario.
     User.hasMany(Date, { foreignKey: 'id_user' }); // Un usuario puede tener muchas citas.
-
+    
     Date.belongsTo(Service, { foreignKey: 'id_service' }); // Una cita pertenece a un servicio.
     Service.hasMany(Date, { foreignKey: 'id_service' }); // Un servicio puede tener muchas citas.
 
@@ -61,6 +61,9 @@ function setupModels(sequelize) {
 
     Product.belongsTo(Category, { foreignKey: 'id_category' }); // Un producto pertenece a una categoria.
     Category.hasMany(Product, { foreignKey: 'id_category' }); // Una categoria puede tener muchos productos.
+    
+    Service.belongsTo(Category, {foreignKey: 'id_category'});
+    Category.hasMany(Service, { foreignKey: 'id_category' }); 
 
     Product.belongsTo(Supplier, { foreignKey: 'id_supplier' }); // Un producto pertenece a un proveedor.
     Supplier.hasMany(Product, { foreignKey: 'id_supplier' }); // Un proveedor puede tener muchos productos.

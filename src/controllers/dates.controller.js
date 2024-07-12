@@ -115,94 +115,110 @@ const createAppointment = async (req, res) => {
     try {
         const appointmentData = req.body;
         let userId;
-        const user = await usersService.findByEmail(appointmentData.client.email)
-        //const userId = appointmentData.userId;
-        //const serviceId = appointmentData.service.id;
-        if (user === null ) {
-            const hashPassword = await bcrypt.hash('contraEstetica2@24', 10);
+        let appointment;
+
+        //console.log(JSON.stringify(appointmentData, null, 2)); // Mejora la visibilidad del log
+        // Buscar el usuario por email
+        let user = await usersService.findByEmail(appointmentData.customer.email);
+
+        if (!user) {
+            // Si el usuario no existe, crear uno nuevo
+            const hashPassword = await bcrypt.hash('contraEstetica2@24', 10); // Contraseña provisional
 
             const newUser = await usersService.create({
-                id_role : 1,
-                id_frequency : 1,
-                name: appointmentData.client.name,
-                last_name1: appointmentData.client.last_name1,
-                last_name2: appointmentData.client.last_name2,
-                email: appointmentData.client.email,
-                password:hashPassword,
-                phone: appointmentData.client.phone,
-            })
+                id_role: 1,
+                id_frequency: 1,
+                name: appointmentData.customer.nombre,
+                last_name1: appointmentData.customer.apellido,
+                last_name2: appointmentData.customer.apellidoMat,
+                email: appointmentData.customer.email,
+                password: hashPassword,
+                phone: appointmentData.customer.telefono,
+            });
             userId = newUser.dataValues.id;
+        } else {
+            userId = user.id;
         }
-        userId = user.id
-        console.log(userId)
-        await service.create({
-            id_user: userId,
-            id_service: appointmentData.service.id,
-            id_payment: 6,
-            date: appointmentData.date,
-            time: appointmentData.time,
-            paid: 0, // Pago inicialmente en 0
-            remaining: appointmentData.service.price, // Restante igual al precio del servicio
-            payment_status: 'pendiente',
-            date_status: 'pendiente' // Estado de la cita también inicialmente como "pendiente"
-        });
-        
+
+        let total_price = appointmentData.total;
+
+        // Crear una cita para cada servicio con su respectivo horario
+        for (const serviceInfo of appointmentData.data.selectedServices) {
+            await service.create({
+                id_user: userId,
+                id_service: serviceInfo.id,
+                id_payment: 6, // ID de pago temporal; ajusta según tu lógica
+                date: appointmentData.data.selectedDate,
+                time: appointmentData.data.selectedTime,
+                paid: 0, // Pago inicialmente en 0
+                remaining: serviceInfo.price, // Restante igual al precio del servicio
+                payment_status: 'pendiente',
+                date_status: 'pendiente' // Estado de la cita también inicialmente como "pendiente"
+            });
+        }
+
+        // Configurar MercadoPago y crear preferencia de pago
         mercadopago.configure({
             access_token: process.env.MERCADOPAGO_ACCESS_TOKEN
-        })
+        });
 
-        const appointment = await mercadopago.preferences.create({
+        // Crear preferencia de pago para todos los servicios
+        appointment = await mercadopago.preferences.create({
             items: [{
-                title: appointmentData.service.name,
-                unit_price: appointmentData.service.price / 2,
+                title: 'Total de servicios',
+                unit_price: total_price,
                 quantity: 1,
                 currency_id: "MXN",
-            },
-            ],
-            // URL a la que Mercado Pago enviará notificaciones sobre la cita (API)
-            notification_url: `https://74e9-201-111-151-167.ngrok-free.app/api/v1/dates/reciveWebHook/${userId}`,
-            // URLs a las que rdirigir al usuario luego de completar la cita (éxito, falla, pendiente) -> frontend
+            }],
+            notification_url: `https://342a-201-97-106-237.ngrok-free.app/api/v1/dates/reciveWebHook/${userId}`,
             back_urls: {
-                success: `http://localhost:3000/success`,
+                success: `http://localhost:3000/user-info/citas-agendadas`,
                 failure: `${process.env.MERCADOPAGO_URL}/appointments`,
                 pending: `${process.env.MERCADOPAGO_URL}/appointments/pending`
             },
         });
 
         res.json({ success: true, data: appointment });
-
     } catch (error) {
+        console.error('Error al crear la cita:', error);
         res.status(500).send({ success: false, message: error.message });
     }
 };
 
+
+//   const serviceData = await serviceS.findOne(payment.dataValues.id_service)
+
 const AppointmentWebhook = async (req, res) => {
     const appointment = req.body;
     const userId = req.params.id;
-    const user = await usersService.findOne(userId)
-    const payment = await service.findOneDate(userId);
-    console.log(payment)
-   const serviceData = await serviceS.findOne(payment.dataValues.id_service)
-
+    const user = await usersService.findOne(userId);
+    const payments = await service.findOneDate(userId); // Obtener todas las citas pendientes del usuario
     try {
         if (appointment.type === "payment") {
-            console.log(appointment, payment)
-            // Actualiza el estado de pago a "pagado"
-            await service.update(payment.dataValues.id,{
-                paid:payment.dataValues.remaining/2,
-                remaining: payment.dataValues.remaining/2,
-                payment_status: 'pendiente',
-                date_status: 'confirmada' // Podrías actualizar el estado de la cita también
-            });
-            const citaData = {
-                nombre: user.dataValues.name + ' ' + user.dataValues.last_name1 + ' ' + user.dataValues.last_name2,
-                date: payment.dataValues.date,
-                time :payment.dataValues.time,
-                servicio: serviceData.dataValues.name
-
+            for (const payment of payments) {
+                // Actualiza el estado de pago a "pagado"
+                await service.update(payment.id, {
+                    paid: payment.remaining / 2,
+                    remaining: payment.remaining / 2,
+                    payment_status: 'pendiente',
+                    date_status: 'programada' // Podrías actualizar el estado de la cita también
+                });
             }
-            await sendEmail(user.dataValues.email, citaData)
 
+            // Obtener información de los servicios agendados
+            const serviceData = await serviceS.findAll(payments.map(payment => payment.dataValues.id_service));
+
+            // Enviar correo de confirmación para cada cita
+            for (let i = 0; i < payments.length; i++) {
+                const citaData = {
+                    nombre: user.name + ' ' + user.last_name1 + ' ' + user.last_name2,
+                    date: payments[i].date,
+                    time: payments[i].timeStart,
+                    time2 : payments[i].timeEnd,
+                    servicio: serviceData[i].name
+                }
+                await sendEmail(user.email, citaData);
+            }
         }
         res.json({ success: true, message: 'Appointment created successfully' });
 
@@ -226,7 +242,7 @@ const update = async (req, res) => {
 const _delete = async (req, res) => {
     try {
         const { id } = req.params;
-        const response = await service.delete(id);
+        const response = await service.delete(id)
         res.json(response);
     } catch (error) {
         res.status(500).send({ success: false, message: error.message });

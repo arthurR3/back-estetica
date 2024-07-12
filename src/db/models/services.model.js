@@ -26,6 +26,11 @@ const ServiceSchema = {
         type: DataTypes.STRING,
         field:'Nombre'
     },
+    id_category :{
+        allowNull: false,
+        type: DataTypes.INTEGER,
+        field:'id_categoria'
+    },
     description: {
         allowNull: false,
         type: DataTypes.STRING,

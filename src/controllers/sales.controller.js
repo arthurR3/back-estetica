@@ -58,6 +58,7 @@ const getById = async (req, res) => {
                     id_sale: detail.id_sale,
                     id_product: detail.id_product,
                     product_name: product.name,
+                    image_product : product.image,
                     amount: detail.amount,
                     unit_price: detail.unit_price,
                     subtotal: detail.subtotal
@@ -91,8 +92,8 @@ const createInMercadoPago = async (req, res) => {
         const result = await mercadopago.preferences.create({
             items: items,
             // URL a la que Mercado Pago enviará notificaciones sobre el pago (API)
-            notification_url: `https://74e9-201-111-151-167.ngrok-free.app/api/v1/sales/webhook/${userID}`,
-            // URLs a las que redirigir al usuario luego de completar el pago (éxito, falla, pendiente) -> frontend
+            notification_url: `https://f0e0-201-105-21-144.ngrok-free.app/api/v1/sales/webhook/${userID}`,
+            // URLs a las que redirignpm ir al usuario luego de completar el pago (éxito, falla, pendiente) -> frontend
             back_urls: {
                 success: `http://localhost:3000/shop-cart/details`,
                 failure: `${process.env.MERCADOPAGO_URL}/shop-cart`,
