@@ -21,6 +21,13 @@ const AddressSchema = {
         type: DataTypes.INTEGER,
         field:'id_direccion'
     },
+    id_user:{
+        // llave foranea
+        allowNull: false,
+        type: DataTypes.INTEGER,
+        field:'id_usuario'
+
+    },
     municipality: {
         allowNull: false,
         type: DataTypes.STRING,

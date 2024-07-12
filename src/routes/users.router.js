@@ -1,6 +1,6 @@
 import { Router } from 'express';
 const router = Router(); 
-import { get, getById, create, update, _delete, login, sendCodeEmail, verificationEmail, updatePassword, getSecretQuestion, verifySecretAnswer} from '../controllers/users.controller.js';
+import { get, getById, create, update, _delete, login, sendConfirmationEmail,sendCodeEmail, verificationEmail, updatePassword, getSecretQuestion, verifySecretAnswer, updatePassword2} from '../controllers/users.controller.js';
 
 router
     .get('/', get )
@@ -8,10 +8,12 @@ router
     .post('/', create )
     .post('/login', login)
     .post('/recover-password', sendCodeEmail)
+    .post('/confirmation-email', sendConfirmationEmail)
     .post('/verification-password', verificationEmail)
     .post('/verifcation-question', getSecretQuestion)
     .post('/verification-answer', verifySecretAnswer)
     .post('/change-password', updatePassword)
+    .post('/change-password/old/:id', updatePassword2)
     .put('/:id', update )
     .delete('/:id', _delete );
 

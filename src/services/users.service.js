@@ -14,6 +14,7 @@ class UsersService {
         const res = await User.findByPk(id);
         return res;
     }
+
     async findByEmail(email) {
         const res = await User.findOne({
             where: {
@@ -22,7 +23,6 @@ class UsersService {
         });
         return res;
     }
-    
 
     async create(data) {
         const res = await User.create(data);

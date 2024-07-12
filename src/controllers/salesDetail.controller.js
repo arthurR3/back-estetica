@@ -1,6 +1,7 @@
+import ProductsService from "../services/products.service.js";
 import SalesDetailService from "../services/salesDetail.service.js";
 const saleDetail = new SalesDetailService();
-
+const productService = new ProductsService();
 const get = async (req, res) => {
     try {
         const response = await saleDetail.find();
@@ -24,6 +25,7 @@ const getById = async (req, res) => {
 const create = async (req, res) => {
     try {
         const response = await saleDetail.create(req.body);
+        
         res.json({ success: true, data: response });
     } catch (error) {
         res.status(500).send({ success: false, message: error.message });
