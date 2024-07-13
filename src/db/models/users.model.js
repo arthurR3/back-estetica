@@ -106,6 +106,12 @@ const UserSchema = {
         type: DataTypes.INTEGER,
         defaultValue: 0,
         field: 'NumIntentos'
+    },
+    status:{
+        allowNull: false,
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+        field: 'Estatus'
     }
 }
 

@@ -50,6 +50,12 @@ const ServiceSchema = {
         allowNull:true,
         type: DataTypes.STRING,
         field: 'Imagen'
+    },
+    status:{
+        allowNull: false,
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+        field: 'Estatus'
     }
 }
   
