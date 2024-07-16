@@ -22,17 +22,17 @@ const ProductSchema = {
         field:'id_producto'
     },
     id_category: { //llave foránea
-        allowNull: false,
+        allowNull: true,
         type: DataTypes.INTEGER,
         field: 'id_categoria' // Nombre del campo en la bd
     },
     id_brand: { //llave foránea
-        allowNull: false,
+        allowNull: true,
         type: DataTypes.INTEGER,
         field: 'id_marca' // Nombre del campo en la bd
     },
     id_supplier: { //llave foránea
-        allowNull: false,
+        allowNull: true,
         type: DataTypes.INTEGER,
         field: 'id_proveedor' // Nombre del campo en la bd
     },
@@ -60,7 +60,7 @@ const ProductSchema = {
         allowNull:false,
         type: DataTypes.STRING,
         field: 'Imagen'
-    }
+    },
 }
   
 export { Product, ProductSchema };
