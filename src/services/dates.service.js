@@ -26,7 +26,27 @@ class DatesService {
         if (!res) return [];
         return res;
     }
-    async findOne(id){
+
+    async findByUserId(userId) {
+        const res = await Date.findAll({
+            where: {
+                id_user: userId
+            },
+            include: [
+                {
+                    model : User,
+                    attributes : ['name', 'last_name1','last_name1']
+                },
+                {
+                    model: Service,
+                    attributes: ['name', 'price']
+                }
+            ]
+        });
+        return res;
+    }
+
+    async findOne(id) {
         const res = await Date.findByPk(id);
         return res;
     }

@@ -9,6 +9,15 @@ class PaymentsService {
         return res;
     }
 
+    async findByName(type) {
+        const res = await Payment.findAll({
+            where: {
+                type: type
+            },
+        });
+        return res;
+    }
+
     async findOne(id) {
         const res = await Payment.findByPk(id);
         return res;

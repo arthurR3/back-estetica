@@ -5,6 +5,7 @@ import { get, getById, create, update, _delete, createAppointment, AppointmentWe
 router
     .get('/', get )
     .get('/:id', getById )
+    .get('/user/:id', getByUserId )
     .post('/', create )
     .post('/createAppointment', createAppointment)
     .post('/reciveWebHook/:id', AppointmentWebhook)
