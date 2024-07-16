@@ -1,4 +1,6 @@
 import { Date } from "../db/models/dates.model.js";
+import { User } from "../db/models/users.model.js";
+import { Service } from "../db/models/services.model.js";
 
 class DatesService {
 
@@ -6,6 +8,25 @@ class DatesService {
 
     async find() {
         const res = await Date.findAll();
+        return res;
+    }
+
+    async findByUserId(userId) {
+        const res = await Date.findAll({
+            where: {
+                id_user: userId
+            },
+            include: [
+                {
+                    model : User,
+                    attributes : ['name', 'last_name1','last_name1']
+                },
+                {
+                    model: Service,
+                    attributes: ['name', 'price']
+                }
+            ]
+        });
         return res;
     }
 

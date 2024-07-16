@@ -24,6 +24,15 @@ class UsersService {
         return res;
     }
 
+    async findByCode(code) {
+        const res = await User.findOne({
+            where: {
+                code: code,
+            },
+        });
+        return res;
+    }
+
     async create(data) {
         const res = await User.create(data);
         return res;

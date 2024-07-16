@@ -20,6 +20,16 @@ const getById = async (req, res) => {
     }
 }
 
+const getByName = async (req, res) => {
+    try {
+        const { type } = req.params;
+        const response = await payment.findByName(type);
+        return res.json(response);
+    } catch (error) {
+        res.status(500).send({ success: false, message: error.message });
+    }
+}
+
 const create = async (req, res) => {
     try {
         const response = await payment.create(req.body);
@@ -51,5 +61,5 @@ const _delete = async (req, res) => {
 }
 
 export {
-    create, get, getById, update, _delete
+    create, get, getById, update, _delete, getByName
 };

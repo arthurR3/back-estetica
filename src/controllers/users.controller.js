@@ -3,8 +3,11 @@ import bcrypt from 'bcrypt'
 import nodemailer from 'nodemailer'
 import ResetCodeService from '../services/codes.service.js';
 import jwt from 'jsonwebtoken';
+import AddressesService from '../services/addresses.service.js';
+
 const codeService = new ResetCodeService();
 const service = new UsersService();
+const address = new AddressesService();
 
 let blockedUsers = {};
 const saltRounds = 10;
@@ -52,8 +55,6 @@ const verifyToken = (req, res, next) => {
     });
 };
 
-
-
 const get = async (req, res) => {
     try {
         const response = await service.find();
@@ -74,6 +75,15 @@ const getById = async (req, res) => {
     }
 }
 
+const getByCode = async (req, res) => {
+    try {
+        const { code } = req.params;
+        const response = await service.findByCode(code);
+        return res.json(response);
+    } catch (error) {
+        res.status(500).send({ success: false, message: error.message });
+    }
+}
 
 const sendCodeEmail = async (req, res) => {
     try {
@@ -150,6 +160,7 @@ const verificationEmail = async (req, res) => {
         res.status(500).send({ success: false, message: error.message })
     }
 }
+
 // Consulta la pregunta secreta asociada al correo electrónico del usuario
 export const getSecretQuestion = async (req, res) => {
     try {
@@ -187,6 +198,7 @@ export const verifySecretAnswer = async (req, res) => {
         return res.status(500).json({ success: false, message: 'Error interno del servidor' });
     }
 };
+
 const login = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -258,8 +270,12 @@ const create = async (req, res) => {
         if (existingUser) {
             return res.status(400).json({ success: false, message: 'El correo ya esta registrado' });
         }
+        
+        const response1 = await address.create(req.body);
+        const idDireccion = response1.id; // Obtiene el ID de la direccion creada
+        
         const hashPassword = await bcrypt.hash(password, saltRounds);
-        const response = await service.create({ ...req.body, password: hashPassword });
+        const response = await service.create({ ...req.body, password: hashPassword, id_address: idDireccion });
         res.json({ success: true, data: response });
     } catch (error) {
         res.status(500).send({ success: false, message: error.message });
@@ -288,5 +304,5 @@ const _delete = async (req, res) => {
 }
 
 export {
-    create, get, getById, update, _delete, login, sendCodeEmail, verificationEmail, updatePassword
+    create, get, getById, update, _delete, login, sendCodeEmail, verificationEmail, updatePassword, getByCode
 };

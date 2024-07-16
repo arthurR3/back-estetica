@@ -1,10 +1,11 @@
 import { Router } from 'express';
 const router = Router(); 
-import { get, getById, create, update, _delete, login, sendCodeEmail, verificationEmail, updatePassword, getSecretQuestion, verifySecretAnswer} from '../controllers/users.controller.js';
+import { get, getById, create, update, _delete, login, sendCodeEmail, verificationEmail, updatePassword, getSecretQuestion, verifySecretAnswer, getByCode} from '../controllers/users.controller.js';
 
 router
     .get('/', get )
     .get('/:id', getById )
+    .get('/code/:code', getByCode )
     .post('/', create )
     .post('/login', login)
     .post('/recover-password', sendCodeEmail)

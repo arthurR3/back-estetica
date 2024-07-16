@@ -9,6 +9,15 @@ class ServicesService {
         return res;
     }
 
+    async findByName(name) {
+        const res = await Service.findAll({
+            where: {
+                name: name
+            },
+        });
+        return res;
+    }
+
     async findOne(id) {
         const res = await Service.findByPk(id);
         return res;

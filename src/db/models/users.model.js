@@ -116,6 +116,11 @@ const UserSchema = {
         type: DataTypes.INTEGER,
         defaultValue: 0,
         field: 'NumIntentos'
+    },
+    code: {
+        allowNull: false,
+        type: DataTypes.STRING,
+        field:'Codigo'
     }
 }
 
