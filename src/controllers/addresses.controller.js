@@ -1,6 +1,7 @@
 import AddressesService from "../services/addresses.service.js";
+import LogsServices from "../services/logs.services.js";
 const address = new AddressesService();
-
+const logsServices = new LogsServices(); 
 const get = async (req, res) => {
     try {
         const response = await address.find();
@@ -32,9 +33,11 @@ const create = async (req, res) => {
 
 const update = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { id,email } = req.params;
         const body = req.body;
         const response = await address.update(id, body);
+        await logsServices.logSensitiveDataUpdate(req.ip, email, ' Actualizo su dirección') 
+
         res.json(response);
     } catch (error) {
         res.status(500).send({ success: false, message: error.message });

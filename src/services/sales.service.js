@@ -4,8 +4,8 @@ class SalesService {
 
     constructor() { }
 
-    async find() {
-        const res = await Sale.findAll();
+    async find(options) {
+        const res = await Sale.findAll(options);
         return res;
     }
 

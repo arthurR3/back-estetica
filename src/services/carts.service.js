@@ -10,7 +10,12 @@ class CartsService {
     }
 
     async findOne(id) {
-        const res = await Cart.findByPk(id);
+        const res = await Cart.findOne({
+            where: {
+                id_user: id,
+                status: 'active'
+            }
+        });
         return res;
     }
 
@@ -21,9 +26,13 @@ class CartsService {
 
     async update(id, data) {
         const model = await this.findOne(id);
+        if (!model) {
+            throw new Error(`Cart with id ${id} not found`);
+        }
         const res = await model.update(data);
         return res;
     }
+
 
     async delete(id) {
         const model = await this.findOne(id);

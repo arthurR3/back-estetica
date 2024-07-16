@@ -6,7 +6,7 @@ router
     .get('/', get )
     .get('/:id', getById )
     .get('/nom/:name', getByName )
-    .post('/', create )
+    .post('/', upload, create )
     .put('/:id', update )
     .delete('/:id', _delete );
 

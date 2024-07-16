@@ -1,11 +1,12 @@
 import { SaleDetail } from "../db/models/salesDetail.model.js";
-
+import ProductsService from "./products.service.js";
+const productService = new ProductsService()
 class SalesDetailService {
 
     constructor() { }
 
-    async find() {
-        const res = await SaleDetail.findAll();
+    async find(options) {
+        const res = await SaleDetail.findAll(options);
         return res;
     }
 
@@ -16,17 +17,21 @@ class SalesDetailService {
 
     async create(data, VentaID) {
         //const res = await SaleDetail.create(data);
-
+        console.log(data)
         // Insertar los detalles de venta en la tabla DetalleVenta
         const details = data.map(producto => ({
-            amount: producto.amount,
-            unit_price: producto.unit_price,
-            subtotal: producto.amount * producto.unit_price,
             id_sale: VentaID,
-            id_product: producto.id
+            id_product: producto.id,
+            amount: producto.quantify,
+            unit_price: producto.price,
+            subtotal: producto.quantify * producto.price,
         }));
         const res = await SaleDetail.bulkCreate(details); //Realiza varias inserciones al mismo tiempo en una tabla.
-
+        for (const producto of data) {
+            const product = await productService.findOne(producto.id); 
+            const newStock = product.amount - producto.quantify;
+            await productService.update(producto.id, { amount: newStock }); 
+        }
         return res;
     }
 
