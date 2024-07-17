@@ -5,13 +5,12 @@ const USER_TABLE = 'usuario';
 class User extends Model {
     static config(sequelize) {
         return {
-            sequelize,
+            sequelize, 
             tableName: USER_TABLE,
             modelName: 'Usuarios',
             timestamps: false
         }
     }
-
     /* static init(sequelize) {
         super.init(UserSchema, {
             sequelize,

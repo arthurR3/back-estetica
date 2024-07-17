@@ -26,7 +26,6 @@ const getById = async (req, res) => {
 
 const create = async (req, res) => {
     const file = req.file;
-    console.log(req.body)
     if (!file) {
         return res.status(400).send({ success: false, message: 'No se ha subido ningún archivo' });
     }
@@ -55,8 +54,8 @@ const update = async (req, res) => {
     try {
         const { id } = req.params;
         const body = req.body;
-        const file = req.file;
-        if (file) {
+        if (req.file) {
+            const file = req.file;
             const format = ['image/png', 'image/jpg', 'image/jpeg'];
             if (!format.includes(file.mimetype)) {
                 return res.status(400).json({ success: false, message: 'Solo se permiten archivos con formato png, jpg y jpeg' })
