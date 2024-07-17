@@ -3,12 +3,13 @@ import bcrypt from 'bcrypt'
 import nodemailer from 'nodemailer'
 import ResetCodeService from '../services/codes.service.js';
 import LogsServices from '../services/logs.services.js';
-import AddressesService from '../services/addresses.service.js';
 import jwt from 'jsonwebtoken';
+import AddressesService from '../services/addresses.service.js';
+
 
 const codeService = new ResetCodeService();
-const addressesService = new AddressesService();
 const service = new UsersService();
+const address = new AddressesService();
 const logService = new LogsServices();
 
 let blockedUsers = {};
@@ -22,6 +23,21 @@ const transporter = nodemailer.createTransport({
     }
 })
 
+const generateUniqueCode = async () => {
+    let codeExists = true;
+    let code;
+    while (codeExists) {
+        let randomNumber = Math.floor(Math.random() * 100000);
+        code = String(randomNumber).padStart(5, '0');
+        codeExists = await codeExists(code); // Esta función debe verificar si el código ya existe
+    }
+    return code;
+}
+
+const codeExists = async (code) => {
+    const user = await service.findOne({ where: { code } });
+    return !!user; // Devuelve true si el usuario existe, false de lo contrario
+}
 const generateCode = () => {
     let randomNumber = Math.floor(Math.random() * 100000);
     return String(randomNumber).padStart(5, '0');
@@ -43,6 +59,20 @@ const generateCode = () => {
     })
 }
 
+const verifyToken = (req, res, next) => {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+        return res.status(401).json({ success: false, message: 'No se proporcionó un token' });
+    }
+    jwt.verify(token, secretKey, (err, decoded) => {
+        if (err) {
+            return res.status(403).json({ success: false, message: 'Token inválido' });
+        }
+        req.userId = decoded.userId;
+        next();
+    });
+};
+
 const get = async (req, res) => {
     try {
         const response = await service.find();
@@ -57,6 +87,16 @@ const getById = async (req, res) => {
     try {
         const { id } = req.params;
         const response = await service.findOne(id);
+        return res.json(response);
+    } catch (error) {
+        res.status(500).send({ success: false, message: error.message });
+    }
+}
+
+const getByCode = async (req, res) => {
+    try {
+        const { code } = req.params;
+        const response = await service.findByCode(code);
         return res.json(response);
     } catch (error) {
         res.status(500).send({ success: false, message: error.message });
@@ -173,6 +213,7 @@ const verificationEmail = async (req, res) => {
         res.status(500).send({ success: false, message: error.message })
     }
 }
+
 // Consulta la pregunta secreta asociada al correo electrónico del usuario
 export const getSecretQuestion = async (req, res) => {
     try {
@@ -210,6 +251,7 @@ export const verifySecretAnswer = async (req, res) => {
         return res.status(500).json({ success: false, message: 'Error interno del servidor' });
     }
 };
+
 const login = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -313,10 +355,11 @@ const create = async (req, res) => {
             return res.status(400).json({ success: false, message: 'El correo ya esta registrado' });
         }
         const hashPassword = await bcrypt.hash(password, saltRounds);
+        const code = await generateUniqueCode();    
+        const response = await service.create({ ...req.body, password: hashPassword, code });
         //console.log({...user, password: hashPassword})
-        const response = await service.create({ ...user, password: hashPassword });
         const id_user = response.id;
-        await addressesService.create({ ...address, id_user })
+        await address.create({ ...address, id_user })
         await logService.logSensitiveDataUpdate(req.ip, email, 'Registró un nuevo usuario')
         res.json({ success: true, data: response });
     } catch (error) {
@@ -347,5 +390,5 @@ const _delete = async (req, res) => {
 }
 
 export {
-    create, get, getById, update, _delete, login, sendConfirmationEmail, sendCodeEmail, verificationEmail, updatePassword, updatePassword2
+    create, get, getById, getByCode,update, _delete, login, sendConfirmationEmail, sendCodeEmail, verificationEmail, updatePassword, updatePassword2
 };

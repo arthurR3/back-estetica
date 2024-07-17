@@ -5,13 +5,12 @@ const USER_TABLE = 'usuario';
 class User extends Model {
     static config(sequelize) {
         return {
-            sequelize,
+            sequelize, 
             tableName: USER_TABLE,
             modelName: 'Usuarios',
             timestamps: false
         }
     }
-
     /* static init(sequelize) {
         super.init(UserSchema, {
             sequelize,
@@ -106,6 +105,17 @@ const UserSchema = {
         type: DataTypes.INTEGER,
         defaultValue: 0,
         field: 'NumIntentos'
+    },
+    code: {
+        allowNull: false,
+        type: DataTypes.STRING,
+        field:'Codigo'
+    },
+    status:{
+        allowNull: false,
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+        field: 'Estatus'
     }
 }
 

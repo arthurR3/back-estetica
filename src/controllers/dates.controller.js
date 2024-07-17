@@ -79,6 +79,56 @@ const sendEmail = async (email, citaData) => {
     });
 };
 
+// Recordatorio de citas
+/* const checkAndSendReminders = async () => {
+  try {
+    const response = await axios.get('http://tu-api-url/appointments');
+    const appointments = response.data;
+
+    const now = new Date();
+
+    appointments.forEach((appointment) => {
+      const appointmentDate = new Date(appointment.date);
+      const hoursDifference = (appointmentDate - now) / 36e5;
+
+      if (hoursDifference >= 23 && hoursDifference < 24) {
+        sendEmail(
+          appointment.Usuario.email,
+          'Recordatorio de Cita',
+          `Tiene una cita en 24 horas. Por favor, confirme.`
+        );
+      } else if (hoursDifference >= 1 && hoursDifference < 2) {
+        if (appointment.date_status !== 'Confirmada') {
+          sendEmail(
+            appointment.Usuario.email,
+            'Recordatorio de Cita',
+            `Su cita es en 2 horas. Por favor, confirme o reprograme, de lo contrario será cancelada.`
+          );
+        } else {
+          sendEmail(
+            appointment.Usuario.email,
+            'Recordatorio Amistoso',
+            `Tiene una cita confirmada en 2 horas. ¡No olvide asistir!`
+          );
+        }
+      } else if (hoursDifference < 0 && appointment.date_status !== 'Confirmada') {
+        // Cancelar la cita
+        axios.put(`http://tu-api-url/appointments/${appointment.id}`, {
+          date_status: 'Cancelada',
+        });
+      }
+    });
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+// Programar la tarea para que se ejecute cada hora
+cron.schedule('0 * * * *', () => {
+  console.log('Ejecutando tarea programada');
+  checkAndSendReminders();
+}); */
+
 const get = async (req, res) => {
     try {
         const response = await service.find();
@@ -99,7 +149,15 @@ const getById = async (req, res) => {
     }
 }
 
-
+const getByUserId = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const response = await service.findByUserId(id);
+        return res.json(response);
+    } catch (error) {
+        res.status(500).send({ success: false, message: error.message });
+    }
+}
 
 const create = async (req, res) => {
     try {
@@ -250,5 +308,5 @@ const _delete = async (req, res) => {
 }
 
 export {
-    create, createAppointment, AppointmentWebhook, get, getById, update, _delete
+    create, createAppointment, AppointmentWebhook, get, getById, getByUserId, update, _delete
 };
