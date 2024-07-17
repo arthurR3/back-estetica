@@ -1,6 +1,6 @@
 import { Router } from 'express';
 const router = Router(); 
-import { get, getById, create, update, _delete, createAppointment, AppointmentWebhook } from '../controllers/dates.controller.js';
+import { get, getById, getByUserId ,create, update, _delete, createAppointment, AppointmentWebhook } from '../controllers/dates.controller.js';
 
 router
     .get('/', get )

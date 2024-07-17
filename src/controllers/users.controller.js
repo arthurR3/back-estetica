@@ -3,13 +3,11 @@ import bcrypt from 'bcrypt'
 import nodemailer from 'nodemailer'
 import ResetCodeService from '../services/codes.service.js';
 import LogsServices from '../services/logs.services.js';
-import AddressesService from '../services/addresses.service.js';
 import jwt from 'jsonwebtoken';
 import AddressesService from '../services/addresses.service.js';
 
 
 const codeService = new ResetCodeService();
-const addressesService = new AddressesService();
 const service = new UsersService();
 const address = new AddressesService();
 const logService = new LogsServices();
@@ -25,6 +23,21 @@ const transporter = nodemailer.createTransport({
     }
 })
 
+const generateUniqueCode = async () => {
+    let codeExists = true;
+    let code;
+    while (codeExists) {
+        let randomNumber = Math.floor(Math.random() * 100000);
+        code = String(randomNumber).padStart(5, '0');
+        codeExists = await codeExists(code); // Esta función debe verificar si el código ya existe
+    }
+    return code;
+}
+
+const codeExists = async (code) => {
+    const user = await service.findOne({ where: { code } });
+    return !!user; // Devuelve true si el usuario existe, false de lo contrario
+}
 const generateCode = () => {
     let randomNumber = Math.floor(Math.random() * 100000);
     return String(randomNumber).padStart(5, '0');
@@ -341,15 +354,12 @@ const create = async (req, res) => {
         if (existingUser) {
             return res.status(400).json({ success: false, message: 'El correo ya esta registrado' });
         }
-        
-        const response1 = await address.create(req.body);
-        const idDireccion = response1.id; // Obtiene el ID de la direccion creada
-        
         const hashPassword = await bcrypt.hash(password, saltRounds);
-        const response = await service.create({ ...req.body, password: hashPassword, id_address: idDireccion });
+        const code = await generateUniqueCode();    
+        const response = await service.create({ ...req.body, password: hashPassword, code });
         //console.log({...user, password: hashPassword})
         const id_user = response.id;
-        await addressesService.create({ ...address, id_user })
+        await address.create({ ...address, id_user })
         await logService.logSensitiveDataUpdate(req.ip, email, 'Registró un nuevo usuario')
         res.json({ success: true, data: response });
     } catch (error) {
@@ -380,5 +390,5 @@ const _delete = async (req, res) => {
 }
 
 export {
-    create, get, getById, update, _delete, login, sendConfirmationEmail, sendCodeEmail, verificationEmail, updatePassword, updatePassword2
+    create, get, getById, getByCode,update, _delete, login, sendConfirmationEmail, sendCodeEmail, verificationEmail, updatePassword, updatePassword2
 };
