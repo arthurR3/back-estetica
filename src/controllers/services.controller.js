@@ -45,15 +45,8 @@ const create = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Solo se permiten archivos con formato png, jpg y jpeg' })
         }
         const imageURL = await uploadImage.uploadImage(file.path, 'Image_Estetica');
-        const newService = {
-            name: req.body.name,
-            id_category: req.body.category,
-            description: req.body.description,
-            price: req.body.price,
-            duration: req.body.duration,
-            image: imageURL
-        };
-        const response = await service.create(newService);
+        req.body.image = imageURL;
+        const response = await service.create(req.body);
         res.json({ success: true, data: response });
     } catch (error) {
         res.status(500).send({ success: false, message: error.message });
