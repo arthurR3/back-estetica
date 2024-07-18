@@ -9,7 +9,7 @@ import AddressesService from '../services/addresses.service.js';
 
 const codeService = new ResetCodeService();
 const service = new UsersService();
-const address = new AddressesService();
+const addressService = new AddressesService();
 const logService = new LogsServices();
 
 let blockedUsers = {};
@@ -24,20 +24,23 @@ const transporter = nodemailer.createTransport({
 })
 
 const generateUniqueCode = async () => {
-    let codeExists = true;
+    const codeExists = async (code) => {
+        const user = await service.findByCode(code);
+        return !!user;
+    };
+
     let code;
-    while (codeExists) {
+    let exists = true;
+
+    while (exists) {
         let randomNumber = Math.floor(Math.random() * 100000);
         code = String(randomNumber).padStart(5, '0');
-        codeExists = await codeExists(code); // Esta función debe verificar si el código ya existe
+        exists = await codeExists(code); // Esta función debe verificar si el código ya existe
     }
-    return code;
-}
 
-const codeExists = async (code) => {
-    const user = await service.findOne({ where: { code } });
-    return !!user; // Devuelve true si el usuario existe, false de lo contrario
-}
+    return code;
+};
+
 const generateCode = () => {
     let randomNumber = Math.floor(Math.random() * 100000);
     return String(randomNumber).padStart(5, '0');
@@ -355,11 +358,24 @@ const create = async (req, res) => {
             return res.status(400).json({ success: false, message: 'El correo ya esta registrado' });
         }
         const hashPassword = await bcrypt.hash(password, saltRounds);
-        const code = await generateUniqueCode();    
-        const response = await service.create({ ...req.body, password: hashPassword, code });
-        //console.log({...user, password: hashPassword})
+        const code = await generateUniqueCode(); 
+        const userData = {
+            id_role: user.id_role,
+            id_frequency: user.id_frequency,
+            name: user.name,
+            last_name1: user.last_name1,
+            last_name2: user.last_name2,
+            email: user.email,
+            password: hashPassword,
+            phone: user.phone,
+            birthday: user.birthday,
+            question: user.question,
+            answers: user.answers,
+            code: code,
+        };
+        const response = await service.create(userData);
         const id_user = response.id;
-        await address.create({ ...address, id_user })
+        await addressService.create({ ...address, id_user })
         await logService.logSensitiveDataUpdate(req.ip, email, 'Registró un nuevo usuario')
         res.json({ success: true, data: response });
     } catch (error) {
