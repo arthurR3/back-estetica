@@ -4,9 +4,11 @@ import nodemailer from 'nodemailer'
 import ServicesService from '../services/services.service.js'
 import DatesService from "../services/dates.service.js";
 import UsersService from "../services/users.service.js"
+import DateDetailService from "../services/datesDetail.service.js";
 const service = new DatesService();
 const usersService = new UsersService();
 const serviceS = new ServicesService();
+const datesDetail = new DateDetailService()
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -171,70 +173,75 @@ const create = async (req, res) => {
 
 const createAppointment = async (req, res) => {
     try {
-        const appointmentData = req.body;
+        const { customer, total, data } = req.body;
         let userId;
-        let appointment;
-
-        //console.log(JSON.stringify(appointmentData, null, 2)); // Mejora la visibilidad del log
-        // Buscar el usuario por email
-        let user = await usersService.findByEmail(appointmentData.customer.email);
+        let user = await usersService.findByEmail(customer.email);
 
         if (!user) {
-            // Si el usuario no existe, crear uno nuevo
-            const hashPassword = await bcrypt.hash('contraEstetica2@24', 10); // Contraseña provisional
+            // Crear un nuevo usuario si no existe
+            const hashPassword = await bcrypt.hash('contraEstetica2@24', 10);
+            console.log("Hashed Password:", hashPassword);
 
             const newUser = await usersService.create({
                 id_role: 1,
                 id_frequency: 1,
-                name: appointmentData.customer.nombre,
-                last_name1: appointmentData.customer.apellido,
-                last_name2: appointmentData.customer.apellidoMat,
-                email: appointmentData.customer.email,
+                name: customer.nombre,
+                last_name1: customer.apellido,
+                last_name2: customer.apellidoMat,
+                email: customer.email,
                 password: hashPassword,
-                phone: appointmentData.customer.telefono,
+                phone: customer.telefono,
             });
             userId = newUser.dataValues.id;
         } else {
             userId = user.id;
         }
 
-        let total_price = appointmentData.total;
+        // Crear una única cita para el usuario
+        const newAppointment = await service.create({
+            id_user: userId,
+            id_payment: 6,
+            date: data.date,
+            time: data.time,
+            total_price: total,
+            paid: 0,
+            remaining: total,
+            payment_status: 'pendiente',
+            date_status: 'pendiente'
+        });
 
-        // Crear una cita para cada servicio con su respectivo horario
-        for (const serviceInfo of appointmentData.data.selectedServices) {
-            await service.create({
-                id_user: userId,
+        // Crear detalles de la cita para cada servicio seleccionado
+        const detailsPromises = data.service.map(async (serviceInfo) => {
+            await datesDetail.create({
+                id_date: newAppointment.dataValues.id,
                 id_service: serviceInfo.id,
-                id_payment: 6, // ID de pago temporal; ajusta según tu lógica
-                date: appointmentData.data.selectedDate,
-                time: appointmentData.data.selectedTime,
-                paid: 0, // Pago inicialmente en 0
-                remaining: serviceInfo.price, // Restante igual al precio del servicio
-                payment_status: 'pendiente',
-                date_status: 'pendiente' // Estado de la cita también inicialmente como "pendiente"
+                price: serviceInfo.price,
+                duration: serviceInfo.duration
             });
-        }
+        });
+
+        await Promise.all(detailsPromises);
 
         // Configurar MercadoPago y crear preferencia de pago
         mercadopago.configure({
             access_token: process.env.MERCADOPAGO_ACCESS_TOKEN
         });
 
-        // Crear preferencia de pago para todos los servicios
-        appointment = await mercadopago.preferences.create({
+        const appointment = await mercadopago.preferences.create({
             items: [{
                 title: 'Total de servicios',
-                unit_price: total_price,
+                unit_price: total,
                 quantity: 1,
                 currency_id: "MXN",
             }],
-            notification_url: `https://342a-201-97-106-237.ngrok-free.app/api/v1/dates/reciveWebHook/${userId}`,
+            notification_url: `https://1302-201-97-98-84.ngrok-free.app/api/v1/dates/reciveWebHook/${userId}`,
             back_urls: {
                 success: `http://localhost:3000/user-info/citas-agendadas`,
                 failure: `${process.env.MERCADOPAGO_URL}/appointments`,
                 pending: `${process.env.MERCADOPAGO_URL}/appointments/pending`
             },
         });
+        console.log("Payment Preference Created");
 
         res.json({ success: true, data: appointment });
     } catch (error) {
@@ -243,48 +250,50 @@ const createAppointment = async (req, res) => {
     }
 };
 
-
-//   const serviceData = await serviceS.findOne(payment.dataValues.id_service)
-
 const AppointmentWebhook = async (req, res) => {
-    const appointment = req.body;
-    const userId = req.params.id;
-    const user = await usersService.findOne(userId);
-    const payments = await service.findOneDate(userId); // Obtener todas las citas pendientes del usuario
+    const { body: appointment, params: { id: userId } } = req;
     try {
+        const user = await usersService.findOne(userId);
+        const appointments = await service.findOneDate(userId); // Cambiado de 'payments' a 'appointments'
+        console.log("Appointment Data:", appointments);
+
         if (appointment.type === "payment") {
-            for (const payment of payments) {
+            const appointmentPromises = appointments.map(async (appointment) => {
                 // Actualiza el estado de pago a "pagado"
-                await service.update(payment.id, {
-                    paid: payment.remaining / 2,
-                    remaining: payment.remaining / 2,
+                await service.update(appointment.id, {
+                    paid: appointment.remaining / 2,
+                    remaining: appointment.remaining / 2,
                     payment_status: 'pendiente',
-                    date_status: 'programada' // Podrías actualizar el estado de la cita también
+                    date_status: 'P_Confirmar'
                 });
-            }
+            });
 
-            // Obtener información de los servicios agendados
-            const serviceData = await serviceS.findAll(payments.map(payment => payment.dataValues.id_service));
-
-            // Enviar correo de confirmación para cada cita
-            for (let i = 0; i < payments.length; i++) {
-                const citaData = {
-                    nombre: user.name + ' ' + user.last_name1 + ' ' + user.last_name2,
-                    date: payments[i].date,
-                    time: payments[i].timeStart,
-                    time2 : payments[i].timeEnd,
-                    servicio: serviceData[i].name
-                }
-                await sendEmail(user.email, citaData);
-            }
+            await Promise.all(appointmentPromises);
         }
-        res.json({ success: true, message: 'Appointment created successfully' });
 
+        res.json({ success: true, message: 'Appointment created successfully' });
     } catch (error) {
         console.error('Error al procesar notificación de Mercado Pago:', error.message);
         res.sendStatus(500); // Responder con un código 500 en caso de error
     }
 };
+
+
+
+const cancelation = async (req, res) => {
+    const {idCita, reason, id_user, email} = req.body;
+    const appointment = service.findOneUser(id_user);
+    try {
+        if(!appointment){
+            return res.status(404).send({success: false, message: 'No existe una cita para ese usuario'})
+        }
+        const status = appointment.status = 'Cancelada'
+        await service.update(idCita,status)
+        await sendEmail(email, 'Cita Cancelada', `Tu cita a sido cancelada. Motivo ${reason}`);
+    } catch (error) {
+        
+    }
+}
 
 const update = async (req, res) => {
     try {

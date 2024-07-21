@@ -5,8 +5,8 @@ import ResetCodeService from '../services/codes.service.js';
 import LogsServices from '../services/logs.services.js';
 import jwt from 'jsonwebtoken';
 import AddressesService from '../services/addresses.service.js';
-
-
+import ImageUploadService from '../services/imageUpload.service.js';
+const uploadImage = new ImageUploadService();
 const codeService = new ResetCodeService();
 const service = new UsersService();
 const addressService = new AddressesService();
@@ -18,7 +18,7 @@ const secretKey = process.env.SECRET_KEY
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-        user: process.env.USER,
+        user: process.env.USER, 
         pass: process.env.PASS
     }
 })
@@ -259,7 +259,7 @@ const login = async (req, res) => {
     try {
         const { email, password } = req.body;
         const response = await service.findByEmail(email);
-        const addressG = await addressesService.findOne(response.id)
+        const addressG = await addressService.findOne(response.id)
         if (!response) {
             return res.status(401).json({ success: false, message: 'Correo electronico incorrecto!' })
         }
@@ -293,6 +293,7 @@ const login = async (req, res) => {
             email: response.email,
             telefono: response.phone,
             rol: response.rol,
+            code: response.code,
             address: {
                 muncipio: addressG.municipality,
                 colonia: addressG.cologne,
@@ -320,7 +321,7 @@ const updatePassword2 = async (req, res) => {
         }
         const isPassword = await bcrypt.compare(oldPassword, user.password);
         if (!isPassword) {
-            return res.status(400).json({ success: false, message: 'La contraseña Old (Anterior) no es correcta!, Intente de Nuevo' });
+            return res.status(400).json({ success: false, message: 'La contraseña Anterior no es correcta!, Intente de Nuevo'});
         }
         const hashPassword = await bcrypt.hash(newPassword, saltRounds);
         await service.update(user.id, { password: hashPassword });
@@ -387,6 +388,15 @@ const update = async (req, res) => {
     try {
         const { id } = req.params;
         const body = req.body;
+        if (req.file) {
+            const file = req.file;
+            const format = ['image/png', 'image/jpg', 'image/jpeg'];
+            if (!format.includes(file.mimetype)) {
+                return res.status(400).json({ success: false, message: 'Solo se permiten archivos con formato png, jpg y jpeg' })
+            }
+            const imageURL = await uploadImage.uploadImage(file.path, 'Image_Estetica');
+            body.image = imageURL;
+        }
         const response = await service.update(id, body);
         await logService.logSensitiveDataUpdate(req.ip, response.dataValues.email, 'Actualizó su información personal')
         res.json(response);

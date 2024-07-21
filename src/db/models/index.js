@@ -16,12 +16,14 @@ import { SaleDetail, SaleDetailSchema } from './salesDetail.model.js';
 import { Cart, CartSchema } from './carts.model.js';
 import { CartDetail, CartDetailSchema } from './cartsDetail.model.js';
 import { Log, LogSchema } from './logs.model.js';
+import { DateDetail, DateDetailSchema } from './datesDetail.model.js';
 
 function setupModels(sequelize) {
     User.init(UserSchema, User.config(sequelize));
     UserNR.init(UserNoRegistredSchema, UserNR.config(sequelize));
     Product.init(ProductSchema, Product.config(sequelize));
     Date.init(DateSchema, Date.config(sequelize));
+    DateDetail.init(DateDetailSchema, DateDetail.config(sequelize));
     Service.init(ServiceSchema, Service.config(sequelize));
     Role.init(RoleSchema, Role.config(sequelize));
     Frequency.init(FrequencySchema, Frequency.config(sequelize));
@@ -40,13 +42,15 @@ function setupModels(sequelize) {
     // Establecer relaciones
     Date.belongsTo(User, { foreignKey: 'id_user' }); // Una cita pertenece a un usuario.
     User.hasMany(Date, { foreignKey: 'id_user' }); // Un usuario puede tener muchas citas.
-    
-    Date.belongsTo(Service, { foreignKey: 'id_service' }); // Una cita pertenece a un servicio.
-    Service.hasMany(Date, { foreignKey: 'id_service' }); // Un servicio puede tener muchas citas.
 
     Date.belongsTo(Payment, { foreignKey: 'id_payment' }); // Una cita pertenece a un metodo_pago.
     Payment.hasMany(Date, { foreignKey: 'id_payment' }); // Un metodo_pago puede tener muchas citas.
 
+    DateDetail.belongsTo(Date, {foreignKey: 'id_date'}); //Un detalle cita tiene una cita
+    Date.hasMany(DateDetail, {foreignKey: 'id_date'}); //Una cita puede tener muchos detalles
+    
+    DateDetail.belongsTo(Service, {foreignKey: 'id_service'}); //Una cita puede service del service
+    Service.hasMany(DateDetail, {foreignKey: 'id_service'}); //Un service puede tener muchos detalles
     User.belongsTo(Role, { foreignKey: 'id_role' }); // Un usuario pertenece a un rol.
     Role.hasMany(User, { foreignKey: 'id_role' }); // Un rol puede tener muchos usuarios.
 

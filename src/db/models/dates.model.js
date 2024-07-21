@@ -24,17 +24,12 @@ const DateSchema = {
     id_user: { //llave foránea
         allowNull: false,
         type: DataTypes.INTEGER,
-        field: 'id_usuario' // Nombre del campo en la base de datos
-    },
-    id_service: { //llave foránea
-        allowNull: false,
-        type: DataTypes.INTEGER,
-        field: 'id_servicio' // Nombre del campo en la base de datos
+        field: 'id_usuario' 
     },
     id_payment: { //llave foránea
         allowNull: false,
         type: DataTypes.INTEGER,
-        field: 'id_metodo_pago' // Nombre del campo en la base de datos
+        field: 'id_metodo_pago'
     },
     date: {
         allowNull: false,

@@ -76,53 +76,86 @@ const getById = async (req, res) => {
 
 const createInMercadoPago = async (req, res) => {
     try {
+        // Configurar Mercado Pago
         mercadopago.configure({
             access_token: process.env.MERCADOPAGO_ACCESS_TOKEN
-        })
+        });
+        console.log('Mercado Pago configured with access token');
 
+        // Obtener datos de la solicitud
         const response = req.body;
+        console.log('Request body:', response);
+
+        // Preparar los datos de los ítems
         const total = response.total;
-        const userID = response.UserId
+        const userID = response.UserId;
+        console.log('Total amount:', total);
+        console.log('User ID:', userID);
+
         const items = response.productos.map(producto => ({
             title: producto.nombre,
             unit_price: total / response.productos.length,
             quantity: 1,
             currency_id: "MXN",
         }));
+        console.log('Items prepared for Mercado Pago:', items);
+        /*5474 9254 3267 0366*/
+        // Crear la preferencia en Mercado Pago
         const result = await mercadopago.preferences.create({
             items: items,
             // URL a la que Mercado Pago enviará notificaciones sobre el pago (API)
-            notification_url: `https://f0e0-201-105-21-144.ngrok-free.app/api/v1/sales/webhook/${userID}`,
-            // URLs a las que redirignpm ir al usuario luego de completar el pago (éxito, falla, pendiente) -> frontend
+            notification_url: `https://ca9c-189-240-192-130.ngrok-free.app/api/v1/sales/webhook/${userID}`,
+            // URLs a las que redirigirá al usuario luego de completar el pago (éxito, falla, pendiente)
             back_urls: {
                 success: `http://localhost:3000/shop-cart/details`,
                 failure: `${process.env.MERCADOPAGO_URL}/shop-cart`,
                 pending: `${process.env.MERCADOPAGO_URL}/pending`
             },
             auto_return: "approved"
-        })
+        });
+        console.log('Mercado Pago preference created:', result);
+
+        // Enviar respuesta al cliente
         res.json({ success: true, data: result });
+
     } catch (error) {
+        // Capturar y enviar error
+        console.error('Error creating Mercado Pago preference:', error.message);
         res.status(500).send({ success: false, message: error.message });
     }
-}
+};
+
 
 const receiveWebhook = async (req, res) => {
     // Verificar que el payment provenga de Mercado Pago
     const payment = req.body;
-    const userId = req.params.id
+    const userId = req.params.id;
     const response = await axios.get(`http://localhost:5000/api/v1/carts/${userId}`)
     const products = response.data.data;
+
+    console.log('Received payment:', payment);
+    console.log('User ID:', userId);
+    
     try {
-        if (payment.type === "payment") {
+        if (payment.type === "payment") {            // Obtener detalles del pago desde Mercado Pago
             const data = await mercadopago.payment.findById(payment.data.id);
-            // Obtener el objeto del metodo del pago que esta en la base de datos
-            const address = await addressesService.findOne(userId)
-            const paymentId = await paymentService.findByName(data.body.payment_method_id)
-            // ID del metodo de pago guardado en la base de datos
+            console.log('Payment data from Mercado Pago:', data);
+
+            // Obtener la dirección del usuario desde la base de datos
+            const address = await addressesService.findOne(userId);
+            console.log('Address from database:', address);
+
+            // Obtener el método de pago desde la base de datos
+            const paymentId = await paymentService.findByName(data.body.payment_method_id);
+            if(!paymentId){
+                paymentId = await paymentService.create({type: data.body.payment_method_id, add_info:data.body.payment_type_id})
+            }
+            console.log('Payment ID from database:', paymentId);
+
+            // ID del método de pago guardado en la base de datos
             const IdMethPay = paymentId.dataValues.id;
-            //console.log(IdMethPay, userId)
-            //Llenado de la tabla de Ventas (Sales)
+
+            // Llenado de la tabla de Ventas (Sales)
             const newSale = await saleService.create({
                 id_user: userId,
                 id_payment: IdMethPay,
@@ -130,22 +163,36 @@ const receiveWebhook = async (req, res) => {
                 shipping_status: "En proceso",
                 total: data.body.transaction_amount,
                 date: new Date()
-            })
-            //Obtengo el id de la venta (Se utilizara en el detalle venta)
-            const idSale = newSale.dataValues.id
-            const res = await saleDetailService.create(products, idSale)
-            if (res) {
-                await axios.delete(`http://localhost:5000/api/v1/carts/${userId}`)
+            });
+            console.log('New sale created:', newSale);
+
+            // Obtengo el id de la venta (Se utilizara en el detalle venta)
+            const idSale = newSale.dataValues.id;
+            console.log('Sale ID:', idSale);
+
+            // Crear detalles de la venta
+            const resSaleDetail = await saleDetailService.create(products, idSale);
+            console.log('Sale detail created:', resSaleDetail);
+
+            // Eliminar productos del carrito
+            if (resSaleDetail) {
+                await axios.delete(`http://localhost:5000/api/v1/carts/${userId}`);
+                console.log('Cart cleared for user:', userId);
             }
+
+            // Enviar respuesta de éxito
+            res.json({ success: true, message: 'Sale created successfully' });
+
+        } else {
+            console.log('Payment type is not "payment".');
+            res.json({ success: false, message: 'Invalid payment type' });
         }
-        res.json({ success: true, message: 'Sale created successfully' });
 
     } catch (error) {
         console.error('Error al procesar notificación de Mercado Pago:', error.message);
         res.sendStatus(500); // Responder con un código 500 en caso de error
     }
 };
-
 
 const update = async (req, res) => {
     try {
