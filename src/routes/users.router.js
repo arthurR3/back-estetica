@@ -1,7 +1,7 @@
 import { Router } from 'express';
 const router = Router(); 
 import { get, getById, create, update, _delete, login, sendConfirmationEmail,sendCodeEmail, verificationEmail, updatePassword, getSecretQuestion, verifySecretAnswer, updatePassword2, getByCode} from '../controllers/users.controller.js';
-
+import upload from '../config/multerConfig.js'
 router
     .get('/', get )
     .get('/:id', getById )
@@ -15,7 +15,7 @@ router
     .post('/verification-answer', verifySecretAnswer)
     .post('/change-password', updatePassword)
     .post('/change-password/old/:id', updatePassword2)
-    .put('/:id', update )
+    .put('/:id',upload, update )
     .delete('/:id', _delete );
 
 export default router;

@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 import { config } from '../config/config.js';
 import setupModels from './../db/models/index.js';
 
-/* const sequelize = new Sequelize(process.env.MYSQL_URL,
+const sequelize = new Sequelize(process.env.MYSQL_URL,
     {
         host: process.env.MYSQLHOST,
         dialect: 'mysql',
@@ -12,8 +12,8 @@ import setupModels from './../db/models/index.js';
             timestamps: false
         }
     }
-); */
-const sequelize = new Sequelize(
+);
+/* const sequelize = new Sequelize(
     config.dbName,
     config.dbUser,
     config.dbPassword,
@@ -22,7 +22,7 @@ const sequelize = new Sequelize(
         dialect: 'mysql',
     }, 
 );
-(async () => {
+ */(async () => {
     try {
         await sequelize.sync();
         console.log('Database synced successfully.');

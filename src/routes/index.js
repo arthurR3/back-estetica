@@ -16,7 +16,7 @@ import salesRouter from './sales.router.js'
 import salesDetailRouter from './salesDetail.router.js'
 import cartsRouter from './carts.router.js'
 import cartsDetailRouter from './cartsDetail.router.js'
-
+import DatesDetailRouter from './datesDetail.router.js'
 function routerApi(app) {
   const router = Router();
   app.use('/api/v1', router); 
@@ -24,6 +24,7 @@ function routerApi(app) {
   router.use('/usersNR', userNRouter)
   router.use('/products', productsRouter);
   router.use('/dates', datesRouter);
+  router.use('/datesDetail', DatesDetailRouter);
   router.use('/services', servicesRouter);
   router.use('/roles', rolesRouter);
   router.use('/frequencies', frequenciesRouter);

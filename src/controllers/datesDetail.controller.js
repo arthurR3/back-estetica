@@ -1,30 +1,23 @@
-import PaymentsService from "../services/payments.service.js";
-const payment = new PaymentsService();
+import DateDetailService from "../services/datesDetail.service.js";
+
+const dateDetailService = new DateDetailService();
 
 const get = async (req, res) => {
     try {
-        const response = await payment.find();
+        const response = await dateDetailService.find();
         return res.json(response);
-    } catch (error) { 
+        
+    } catch (error) {
         res.status(500).send({ success: false, message: error.message });
     }
 }
 
 const getById = async (req, res) => {
     try {
-        const { id } = req.params;
-        const response = await payment.findOne(id);
+        const { id } = req.params
+        const response = await dateDetailService.findOne(id);
         return res.json(response);
-    } catch (error) {
-        res.status(500).send({ success: false, message: error.message });
-    }
-}
-
-const getByName = async (req, res) => {
-    try {
-        const { type } = req.params;
-        const response = await payment.findByName(type);
-        return res.json(response);
+        
     } catch (error) {
         res.status(500).send({ success: false, message: error.message });
     }
@@ -32,8 +25,9 @@ const getByName = async (req, res) => {
 
 const create = async (req, res) => {
     try {
-        const response = await payment.create(req.body);
+        const response = await dateDetailService.create(req.body);
         res.json({ success: true, data: response });
+        
     } catch (error) {
         res.status(500).send({ success: false, message: error.message });
     }
@@ -43,8 +37,9 @@ const update = async (req, res) => {
     try {
         const { id } = req.params;
         const body = req.body;
-        const response = await payment.update(id, body);
-        res.json(response);
+        const response = await dateDetailService.update(id, body);
+        res.json({ success: true, data: response });
+        
     } catch (error) {
         res.status(500).send({ success: false, message: error.message });
     }
@@ -53,13 +48,11 @@ const update = async (req, res) => {
 const _delete = async (req, res) => {
     try {
         const { id } = req.params;
-        const response = await payment.delete(id);
-        res.json(response);
+        const response = await dateDetailService.delete(id);
+        res.json({ success: true, data: response });
     } catch (error) {
         res.status(500).send({ success: false, message: error.message });
     }
 }
 
-export {
-    create, get, getById, update,_delete, getByName
-};
+export { get, getById, create, update, _delete } 

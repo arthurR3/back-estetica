@@ -110,7 +110,7 @@ const UserSchema = {
         allowNull: false,
         type: DataTypes.STRING,
         field:'Codigo'
-    },
+    },  
     status:{
         allowNull: false,
         type: DataTypes.BOOLEAN,

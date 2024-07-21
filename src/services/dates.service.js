@@ -2,31 +2,42 @@ import { Date } from "../db/models/dates.model.js";
 import { User } from "../db/models/users.model.js";
 import { Payment } from "../db/models/payments.model.js";
 import { Service } from "../db/models/services.model.js";
+import { DateDetail } from "../db/models/datesDetail.model.js";
 class DatesService {
 
     constructor() { }
 
     async find() {
-        const res = await Date.findAll({
-            include: [
-                {
-                    model: User, // Modelo de usuario relacionado
-                    attributes: ['name', 'last_name1','last_name2', 'phone','email'], // Atributos que se quiere obtener del usuario
-                },
-                {
-                    model: Service, // Modelo de servicio relacionado
-                    attributes: ['name', 'price'], // Atributos que se quiere obtener del servicio
-                },
-                {
-                    model: Payment, // Modelo de método de pago relacionado
-                    attributes: ['type'], // Atributos que se quiere obtener del método de pago
-                },
-            ],
-        });
-        if (!res) return [];
-        return res;
+        try {
+            const res = await Date.findAll({
+                include: [
+                    {
+                        model: User, // Modelo de usuario relacionado
+                        attributes: ['id', 'name', 'last_name1', 'last_name2', 'phone', 'email'], // Atributos que se quiere obtener del usuario
+                    },
+                    {
+                        model: DateDetail, // Modelo de detalle de cita relacionado
+                        include: [
+                            {
+                                model: Service, // Modelo de servicio relacionado dentro de detalle de cita
+                                attributes: ['name'] // Atributos que se quiere obtener del servicio
+                            }
+                        ],
+                        attributes: ['id_service', 'price', 'duration'] // Atributos del detalle de cita
+                    },
+                    {
+                        model: Payment, // Modelo de método de pago relacionado
+                        attributes: ['type'], // Atributos que se quiere obtener del método de pago
+                    },
+                ],
+            });
+            
+            return res || []; // Devuelve el resultado o un array vacío si no hay resultados
+        } catch (error) {
+            console.error('Error al obtener las citas:', error);
+            throw error;
+        }
     }
-
     async findByUserId(userId) {
         const res = await Date.findAll({
             where: {
@@ -34,13 +45,23 @@ class DatesService {
             },
             include: [
                 {
-                    model : User,
-                    attributes : ['name', 'last_name1','last_name1']
+                    model: User, // Modelo de usuario relacionado
+                    attributes: ['id', 'name', 'last_name1', 'last_name2', 'phone', 'email'], // Atributos que se quiere obtener del usuario
                 },
                 {
-                    model: Service,
-                    attributes: ['name', 'price']
-                }
+                    model: DateDetail, // Modelo de detalle de cita relacionado
+                    include: [
+                        {
+                            model: Service, // Modelo de servicio relacionado dentro de detalle de cita
+                            attributes: ['name'] // Atributos que se quiere obtener del servicio
+                        }
+                    ],
+                    attributes: ['id_service', 'price', 'duration'] // Atributos del detalle de cita
+                },
+                {
+                    model: Payment, // Modelo de método de pago relacionado
+                    attributes: ['type'], // Atributos que se quiere obtener del método de pago
+                },
             ]
         });
         return res;
@@ -56,17 +77,23 @@ class DatesService {
             include: [
                 {
                     model: User, // Modelo de usuario relacionado
-                    attributes: ['name', 'last_name1','last_name2', 'phone','email'], // Atributos que se quiere obtener del usuario
+                    attributes: ['id', 'name', 'last_name1', 'last_name2', 'phone', 'email'], // Atributos que se quiere obtener del usuario
                 },
                 {
-                    model: Service, // Modelo de servicio relacionado
-                    attributes: ['name', 'price'], // Atributos que se quiere obtener del servicio
+                    model: DateDetail, // Modelo de detalle de cita relacionado
+                    include: [
+                        {
+                            model: Service, // Modelo de servicio relacionado dentro de detalle de cita
+                            attributes: ['name'] // Atributos que se quiere obtener del servicio
+                        }
+                    ],
+                    attributes: ['id_service', 'price', 'duration'] // Atributos del detalle de cita
                 },
                 {
                     model: Payment, // Modelo de método de pago relacionado
                     attributes: ['type'], // Atributos que se quiere obtener del método de pago
                 },
-            ],
+            ]
         });
         if (!res) return [];
 
