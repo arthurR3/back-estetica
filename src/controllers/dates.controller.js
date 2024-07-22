@@ -5,6 +5,7 @@ import ServicesService from '../services/services.service.js'
 import DatesService from "../services/dates.service.js";
 import UsersService from "../services/users.service.js"
 import DateDetailService from "../services/datesDetail.service.js";
+import { response } from "express";
 const service = new DatesService();
 const usersService = new UsersService();
 const serviceS = new ServicesService();
@@ -141,6 +142,48 @@ const get = async (req, res) => {
     }
 }
 
+const getByDate = async (req, res) => {
+    try {
+        const response = await service.findDate()
+        return res.json(response.map(cita => cita.date))
+    } catch (error) {
+        res.status(500).send({success: false, message: error.message})
+    }
+}
+const getCounts = async (req, res) => {
+    try {
+        const response = await service.countStatus()
+        return res.json(response);
+    } catch (error) {
+        res.status(500).send({success: false, message: error.message})
+    }
+}
+
+// Método para manejar la solicitud en el controlador
+const getByTime = async (req, res) => {
+    const { date } = req.body;
+
+    // Validar la existencia y formato de la fecha
+    if (!date) {
+        return res.status(400).send({ success: false, message: "Date is required" });
+    }
+
+    // Validar el formato de la fecha (opcional, dependiendo de cómo esté guardada en la base de datos)
+    const datePattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.000Z$/;
+    if (!datePattern.test(date)) {
+        return res.status(400).send({ success: false, message: "Invalid date format" });
+    }
+
+    try {
+        const response = await service.findBookedSlots(date);
+        return res.json({ success: true, slots: response });
+    } catch (error) {
+        console.error('Error en getByTime:', error);
+        res.status(500).send({ success: false, message: error.message });
+    }
+};
+
+
 const getById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -162,14 +205,68 @@ const getByUserId = async (req, res) => {
 }
 
 const create = async (req, res) => {
+    const data = req.body;
     try {
+        const res = {
+            id_user : data.id_user,
+            id_payment : data.id_payment,
+            date : data.date,
+            time: data.time,
+            paid :data.paid,
+            remaining :data.remaining,
+            payment_status :data.payment_status,
+            date_status: data.date_status
+        }
+        const response = await service.create(res);
+        const detailsPromises = response.service.map(async (response) => {
+            await datesDetail.create({
+                id_date: response.dataValues.id,
+                id_service: response.id,
+                price: response.price,
+                duration: response.duration
+            });
+        });
 
-        const response = await service.create(req.body);
+        await Promise.all(detailsPromises);
         res.json({ success: true, data: response });
     } catch (error) {
         res.status(500).send({ success: false, message: error.message });
     }
 }
+
+/**const create = async (req, res) => {
+    try {
+        const { id_user, id_service, id_payment, date, time, paid, remaining, payment_status, date_status } = req.body;
+
+        // Crear la cita
+        const response = await service.create({
+            id_user,
+            id_payment,
+            date,
+            time,
+            paid,
+            remaining,
+            payment_status,
+            date_status
+        });
+
+        // Crear el detalle de la cita
+        const { id: id_date } = response.dataValues;
+        const { price, duration } = req.body;
+
+        await datesDetail.create({
+            id_date,
+            id_service,
+            price,
+            duration
+        });
+
+        res.json({ success: true, data: response });
+    } catch (error) {
+        res.status(500).send({ success: false, message: error.message });
+    }
+};
+ */
 
 const createAppointment = async (req, res) => {
     try {
@@ -234,7 +331,7 @@ const createAppointment = async (req, res) => {
                 quantity: 1,
                 currency_id: "MXN",
             }],
-            notification_url: `https://1302-201-97-98-84.ngrok-free.app/api/v1/dates/reciveWebHook/${userId}`,
+            notification_url: `https://4af1-189-240-192-130.ngrok-free.app/api/v1/dates/reciveWebHook/${userId}`,
             back_urls: {
                 success: `http://localhost:3000/user-info/citas-agendadas`,
                 failure: `${process.env.MERCADOPAGO_URL}/appointments`,
@@ -317,5 +414,5 @@ const _delete = async (req, res) => {
 }
 
 export {
-    create, createAppointment, AppointmentWebhook, get, getById, getByUserId, update, _delete
+    create, createAppointment, AppointmentWebhook, get, getByTime, getById, getCounts,getByDate, getByUserId, update, _delete
 };
