@@ -28,7 +28,7 @@ const LogSchema = {
     },
     date:{ 
         allowNull:false,
-        type: DataTypes.DATE,
+        type: DataTypes.DATEONLY,
         field: 'Fecha'
     },
     email:{ 

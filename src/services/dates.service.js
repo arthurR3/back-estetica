@@ -3,6 +3,8 @@ import { User } from "../db/models/users.model.js";
 import { Payment } from "../db/models/payments.model.js";
 import { Service } from "../db/models/services.model.js";
 import { DateDetail } from "../db/models/datesDetail.model.js";
+import Sequelize from "sequelize";
+import { where } from "sequelize";
 class DatesService {
 
     constructor() { }
@@ -31,7 +33,7 @@ class DatesService {
                     },
                 ],
             });
-            
+
             return res || []; // Devuelve el resultado o un array vacío si no hay resultados
         } catch (error) {
             console.error('Error al obtener las citas:', error);
@@ -98,9 +100,9 @@ class DatesService {
         if (!res) return [];
 
         return res;
-          }
-    
-    async findOneDate(id){
+    }
+
+    async findOneDate(id) {
         const res = await Date.findAll({
             where: {
                 id_user: id,
@@ -108,6 +110,50 @@ class DatesService {
             }
         });
         return res;
+    }
+    async findDate() {
+        const res = this.find({
+            attributes: ['Fecha'],
+            where: {
+                date_status: 'P_Confirmar'
+            }
+        })
+        return res;
+    }
+    async findBookedSlots(date){
+        const res = await Date.findAll({
+            where:{
+                date: {
+                    [Sequelize.Op.eq]: date
+                },
+                date_status: [ 'pendiente','Confirmada' , 'P_Confirmar']
+            },
+            attributes:['Horario']
+        });
+        return res
+    }
+    async countStatus() {
+        const confirmadas = await Date.count({
+            where: {
+                date_status: 'Confirmada'
+            }
+        })
+        const pendientes = await Date.count({
+            where: {
+                date_status: 'P_Confirmar'
+            }
+        })
+        const canceladas = await Date.count({
+            where: {
+                date_status: 'Cancelada'
+            }
+        })
+        const atendidas = await Date.count({
+            where: {
+                date_status: 'Atendidas'
+            }
+        })
+        return { confirmadas, pendientes, canceladas, atendidas };
     }
 
     async create(data) {

@@ -17,6 +17,7 @@ import salesDetailRouter from './salesDetail.router.js'
 import cartsRouter from './carts.router.js'
 import cartsDetailRouter from './cartsDetail.router.js'
 import DatesDetailRouter from './datesDetail.router.js'
+import PromotionRouter from './promotion.router.js'
 function routerApi(app) {
   const router = Router();
   app.use('/api/v1', router); 
@@ -37,6 +38,7 @@ function routerApi(app) {
   router.use('/salesDetail', salesDetailRouter);
   router.use('/carts', cartsRouter);
   router.use('/cartsDetail', cartsDetailRouter);
+  router.use('/promotion', PromotionRouter);
 }
 
 export default routerApi;

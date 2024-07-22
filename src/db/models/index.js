@@ -17,7 +17,7 @@ import { Cart, CartSchema } from './carts.model.js';
 import { CartDetail, CartDetailSchema } from './cartsDetail.model.js';
 import { Log, LogSchema } from './logs.model.js';
 import { DateDetail, DateDetailSchema } from './datesDetail.model.js';
-
+import { Promotion, PromotionSchema } from './promotion.model.js';
 function setupModels(sequelize) {
     User.init(UserSchema, User.config(sequelize));
     UserNR.init(UserNoRegistredSchema, UserNR.config(sequelize));
@@ -38,6 +38,7 @@ function setupModels(sequelize) {
     CartDetail.init(CartDetailSchema, CartDetail.config(sequelize));
     ResetCode.init(CodeSchema, ResetCode.config(sequelize));
     Log.init(LogSchema, Log.config(sequelize));
+    Promotion.init(PromotionSchema, Promotion.config(sequelize));
 
     // Establecer relaciones
     Date.belongsTo(User, { foreignKey: 'id_user' }); // Una cita pertenece a un usuario.
@@ -97,6 +98,12 @@ function setupModels(sequelize) {
 
     CartDetail.belongsTo(Product, { foreignKey: 'id_product', });
     Product.hasMany(CartDetail, { foreignKey: 'id_product', });
+
+    Promotion.belongsTo(Product, { foreignKey: 'id_product' }); // Una promoción puede pertenecer a un producto.
+    Product.hasMany(Promotion, { foreignKey: 'id_product' }); // Un producto puede tener muchas promociones.
+
+    Promotion.belongsTo(Service, { foreignKey: 'id_service' }); // Una promoción puede pertenecer a un servicio.
+    Service.hasMany(Promotion, { foreignKey: 'id_service' }); // Un servicio puede tener muchas promociones.
 }
 
 export default setupModels;
