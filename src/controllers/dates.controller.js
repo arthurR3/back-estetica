@@ -207,32 +207,38 @@ const getByUserId = async (req, res) => {
 const create = async (req, res) => {
     const data = req.body;
     try {
-        const res = {
-            id_user : data.id_user,
-            id_payment : data.id_payment,
-            date : data.date,
+        // Crear la cita principal
+        const newDate = {
+            id_user: data.id_user,
+            id_payment: data.id_payment,
+            date: data.date,
             time: data.time,
-            paid :data.paid,
-            remaining :data.remaining,
-            payment_status :data.payment_status,
+            paid: data.paid,
+            remaining: data.remaining,
+            payment_status: data.payment_status,
             date_status: data.date_status
+        };
+        const response = await service.create(newDate)
+        const serviceDetails = await serviceS.findOne(data.id_service);
+
+        if (!serviceDetails) {
+            return res.status(404).json({ success: false, message: 'Service not found' });
         }
-        const response = await service.create(res);
-        const detailsPromises = response.service.map(async (response) => {
-            await datesDetail.create({
-                id_date: response.dataValues.id,
-                id_service: response.id,
-                price: response.price,
-                duration: response.duration
-            });
+
+        // Crear el detalle de la cita usando el id de la cita creada y los detalles del servicio
+        await datesDetail.create({
+            id_date: response.dataValues.id,
+            id_service: serviceDetails.id,
+            price: serviceDetails.price,
+            duration: serviceDetails.duration
         });
 
-        await Promise.all(detailsPromises);
+
         res.json({ success: true, data: response });
     } catch (error) {
         res.status(500).send({ success: false, message: error.message });
     }
-}
+};
 
 /**const create = async (req, res) => {
     try {
