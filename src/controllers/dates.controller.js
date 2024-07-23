@@ -303,9 +303,9 @@ const createAppointment = async (req, res) => {
                 quantity: 1,
                 currency_id: "MXN",
             }],
-            notification_url: `https://4af1-189-240-192-130.ngrok-free.app/api/v1/dates/reciveWebHook/${userId}`,
+            notification_url: `https://back-estetica-production-710f.up.railway.app/api/v1/dates/reciveWebHook/${userId}`,
             back_urls: {
-                success: `http://localhost:3000/user-info/citas-agendadas`,
+                success: `https://estetica-principal.netlify.app//user-info/citas-agendadas`,
                 failure: `${process.env.MERCADOPAGO_URL}/appointments`,
                 pending: `${process.env.MERCADOPAGO_URL}/appointments/pending`
             },
