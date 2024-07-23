@@ -220,7 +220,6 @@ const create = async (req, res) => {
         };
         const response = await service.create(newDate)
         const serviceDetails = await serviceS.findOne(data.id_service);
-
         if (!serviceDetails) {
             return res.status(404).json({ success: false, message: 'Service not found' });
         }
@@ -239,6 +238,7 @@ const create = async (req, res) => {
         res.status(500).send({ success: false, message: error.message });
     }
 };
+  
 
 const createAppointment = async (req, res) => {
     try {
