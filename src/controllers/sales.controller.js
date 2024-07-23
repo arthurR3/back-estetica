@@ -104,10 +104,10 @@ const createInMercadoPago = async (req, res) => {
         const result = await mercadopago.preferences.create({
             items: items,
             // URL a la que Mercado Pago enviará notificaciones sobre el pago (API)
-            notification_url: `https://ca9c-189-240-192-130.ngrok-free.app/api/v1/sales/webhook/${userID}`,
+            notification_url: `https://back-estetica-production-710f.up.railway.app/api/v1/sales/webhook/${userID}`,
             // URLs a las que redirigirá al usuario luego de completar el pago (éxito, falla, pendiente)
             back_urls: {
-                success: `http://localhost:3000/shop-cart/details`,
+                success: `https://back-estetica-production-710f.up.railway.app/shop-cart/details`,
                 failure: `${process.env.MERCADOPAGO_URL}/shop-cart`,
                 pending: `${process.env.MERCADOPAGO_URL}/pending`
             },
@@ -130,7 +130,7 @@ const receiveWebhook = async (req, res) => {
     // Verificar que el payment provenga de Mercado Pago
     const payment = req.body;
     const userId = req.params.id;
-    const response = await axios.get(`http://localhost:5000/api/v1/carts/${userId}`)
+    const response = await axios.get(`https://back-estetica-production-710f.up.railway.app/api/v1/carts/${userId}`)
     const products = response.data.data;
 
     console.log('Received payment:', payment);
@@ -176,7 +176,7 @@ const receiveWebhook = async (req, res) => {
 
             // Eliminar productos del carrito
             if (resSaleDetail) {
-                await axios.delete(`http://localhost:5000/api/v1/carts/${userId}`);
+                await axios.delete(`https://back-estetica-production-710f.up.railway.app/api/v1/carts/${userId}`);
                 console.log('Cart cleared for user:', userId);
             }
 
