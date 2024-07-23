@@ -292,7 +292,7 @@ const login = async (req, res) => {
             lastName2: response.last_name2,
             email: response.email,
             telefono: response.phone,
-            rol: response.rol,
+            rol: response.id_role,
             code: response.code,
             address: {
                 muncipio: addressG.municipality,

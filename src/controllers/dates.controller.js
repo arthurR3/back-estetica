@@ -240,40 +240,6 @@ const create = async (req, res) => {
     }
 };
 
-/**const create = async (req, res) => {
-    try {
-        const { id_user, id_service, id_payment, date, time, paid, remaining, payment_status, date_status } = req.body;
-
-        // Crear la cita
-        const response = await service.create({
-            id_user,
-            id_payment,
-            date,
-            time,
-            paid,
-            remaining,
-            payment_status,
-            date_status
-        });
-
-        // Crear el detalle de la cita
-        const { id: id_date } = response.dataValues;
-        const { price, duration } = req.body;
-
-        await datesDetail.create({
-            id_date,
-            id_service,
-            price,
-            duration
-        });
-
-        res.json({ success: true, data: response });
-    } catch (error) {
-        res.status(500).send({ success: false, message: error.message });
-    }
-};
- */
-
 const createAppointment = async (req, res) => {
     try {
         const { customer, total, data } = req.body;
