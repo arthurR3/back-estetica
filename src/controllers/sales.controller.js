@@ -84,6 +84,45 @@ const getById = async (req, res) => {
         res.status(500).send({ success: false, message: error.message });
     }
 };
+const simulatePayment = async (req, res) => {
+    try {
+        // Obtener datos de la solicitud
+        const { total, userID, productos } = req.body;
+
+        // Preparar los datos de los ítems
+        const items = productos.map(producto => ({
+            title: producto.nombre,
+            unit_price: total / productos.length,
+            quantity: 1,
+            currency_id: "MXN",
+        }));
+
+        // Simular la creación de una preferencia de pago
+        const result = {
+            id: Math.floor(Math.random() * 1000000), // ID simulado
+            items: items,
+            total: total,
+            userID: userID
+        };
+
+        // Enviar notificación simulada a la URL de notificación
+        await axios.post(`https://back-estetica-production-710f.up.railway.app/api/v1/sales/webhook/${userID}`, {
+            type: "payment",
+            data: {
+                id: result.id,
+                transaction_amount: total,
+                payment_method_id: "master",
+                payment_type_id: "credit_card",
+            }
+        });
+
+        res.json({ success: true, data: result });
+
+    } catch (error) {
+        console.error('Error simulating payment:', error.message);
+        res.status(500).send({ success: false, message: error.message });
+    }
+};
 
 const createInMercadoPago = async (req, res) => {
     try {
@@ -138,32 +177,21 @@ const createInMercadoPago = async (req, res) => {
 
 
 const receiveWebhook = async (req, res) => {
-    // Verificar que el payment provenga de Mercado Pago
     const payment = req.body;
     const userId = req.params.id;
-    const response = await axios.get(`https://back-estetica-production-710f.up.railway.app/api/v1/carts/${userId}`)
-    const products = response.data.data;
 
-    console.log('Received payment:', payment);
-    console.log('User ID:', userId);
-    
     try {
-        if (payment.type === "payment") {            // Obtener detalles del pago desde Mercado Pago
-            const data = await mercadopago.payment.findById(payment.data.id);
-            console.log('Payment data from Mercado Pago:', data);
+        if (payment.type === "payment") {
+            const data = payment.data; // Datos simulados o de Mercado Pago
 
             // Obtener la dirección del usuario desde la base de datos
             const address = await addressesService.findOne(userId);
-            console.log('Address from database:', address);
 
-            // Obtener el método de pago desde la base de datos
-            const paymentId = await paymentService.findByName(data.body.payment_method_id);
-            if(!paymentId){
-                paymentId = await paymentService.create({type: data.body.payment_method_id, add_info:data.body.payment_type_id})
+            // Obtener o crear el método de pago desde la base de datos
+            let paymentId = await paymentService.findByName(data.payment_method_id);
+            if (!paymentId) {
+                paymentId = await paymentService.create({ type: data.payment_method_id, add_info: data.payment_type_id });
             }
-            console.log('Payment ID from database:', paymentId);
-
-            // ID del método de pago guardado en la base de datos
             const IdMethPay = paymentId.dataValues.id;
 
             // Llenado de la tabla de Ventas (Sales)
@@ -172,38 +200,42 @@ const receiveWebhook = async (req, res) => {
                 id_payment: IdMethPay,
                 id_address: address.id,
                 shipping_status: "En proceso",
-                total: data.body.transaction_amount,
+                total: data.transaction_amount,
                 date: new Date()
             });
-            console.log('New sale created:', newSale);
-
-            // Obtengo el id de la venta (Se utilizara en el detalle venta)
             const idSale = newSale.dataValues.id;
-            console.log('Sale ID:', idSale);
+
+            // Obtener los productos del carrito del usuario
+            const response = await axios.get(`https://back-estetica-production-710f.up.railway.app/api/v1/carts/${userId}`);
+            const products = response.data.data;
 
             // Crear detalles de la venta
-            const resSaleDetail = await saleDetailService.create(products, idSale);
-            console.log('Sale detail created:', resSaleDetail);
+            for (const product of products) {
+                await saleDetailService.create({
+                    id_sale: idSale,
+                    id_product: product.id,
+                    amount: product.amount,
+                    unit_price: product.price,
+                    subtotal: product.price * product.amount
+                });
+            }
 
             // Eliminar productos del carrito
-            if (resSaleDetail) {
-                await axios.delete(`https://back-estetica-production-710f.up.railway.app/api/v1/carts/${userId}`);
-                console.log('Cart cleared for user:', userId);
-            }
+            await axios.delete(`https://back-estetica-production-710f.up.railway.app/api/v1/carts/${userId}`);
 
             // Enviar respuesta de éxito
             res.json({ success: true, message: 'Sale created successfully' });
 
         } else {
-            console.log('Payment type is not "payment".');
             res.json({ success: false, message: 'Invalid payment type' });
         }
 
     } catch (error) {
-        console.error('Error al procesar notificación de Mercado Pago:', error.message);
-        res.sendStatus(500); // Responder con un código 500 en caso de error
+        console.error('Error processing webhook notification:', error.message);
+        res.sendStatus(500);
     }
 };
+
 
 const update = async (req, res) => {
     try {
@@ -227,5 +259,5 @@ const _delete = async (req, res) => {
 }
 
 export {
-    createInMercadoPago, receiveWebhook, get, getById, update, _delete
+    createInMercadoPago, simulatePayment, receiveWebhook, get, getById, update, _delete
 };
