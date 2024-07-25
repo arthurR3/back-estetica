@@ -2,6 +2,8 @@ import { Sale } from "../db/models/sales.model.js";
 import { User } from "../db/models/users.model.js";
 import { SaleDetail } from "../db/models/salesDetail.model.js";
 import { Product } from "../db/models/products.model.js";
+import { Category } from "../db/models/categories.model.js";
+import { Brand } from "../db/models/brands.model.js";
 class SalesService {
 
     constructor() { }
@@ -20,7 +22,17 @@ class SalesService {
                         include: [
                             {
                                 model: Product, // Información del producto
-                                attributes: ['id', 'name', 'description', 'price'] // Atributos del producto
+                                attributes: ['id', 'id_category', 'id_brand', 'name', 'description', 'price'], // Atributos del producto
+                                include:[
+                                    {
+                                        model: Category, // Información de la categoría
+                                        attributes: [ 'id','name'] // Atributos de la categoría
+                                    },
+                                    {
+                                        model: Brand, // Información de la categoría
+                                        attributes: [ 'id','name'] // Atributos de la categoría
+                                    }
+                                ]
                             }
                         ]
                     }

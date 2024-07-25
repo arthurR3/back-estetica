@@ -6,12 +6,17 @@ import SalesDetailService from "../services/salesDetail.service.js";
 import mercadopago from "mercadopago";
 import ProductsService from "../services/products.service.js";
 import AddressesService from "../services/addresses.service.js";
+import CategoriesService from '../services/categories.service.js'
+import BrandsService from '../services/brands.service.js'
+
 const addressesService = new AddressesService();
 const productService = new ProductsService();
 const cartService = new CartsService();
 const saleService = new SalesService();
 const saleDetailService = new SalesDetailService();
 const paymentService = new PaymentsService();
+const categoryService = new CategoriesService();
+const brandService = new BrandsService();
 
 const get = async (req, res) => {
     try {
@@ -53,18 +58,24 @@ const getById = async (req, res) => {
             // Agregar los detalles de la venta al objeto
             for (const detail of saleDetails) {
                 const product = await productService.findOne(detail.id_product);
+                const category = await categoryService.findOne(product.id_category);
+                const brand = await brandService.findOne(product.id_brand);
+
                 saleInfo.details.push({
                     id: detail.id,
                     id_sale: detail.id_sale,
                     id_product: detail.id_product,
                     product_name: product.name,
-                    image_product : product.image,
+                    image_product: product.image,
                     amount: detail.amount,
                     unit_price: detail.unit_price,
-                    subtotal: detail.subtotal
+                    subtotal: detail.subtotal,
+                    category_id: product.id_category,
+                    category_name: category.name,
+                    brand_id: product.id_brand,
+                    brand_name: brand.name
                 });
             }
-
             salesWithDetails.push(saleInfo);
         }
 
@@ -107,7 +118,7 @@ const createInMercadoPago = async (req, res) => {
             notification_url: `https://back-estetica-production-710f.up.railway.app/api/v1/sales/webhook/${userID}`,
             // URLs a las que redirigirá al usuario luego de completar el pago (éxito, falla, pendiente)
             back_urls: {
-                success: `https://back-estetica-production-710f.up.railway.app/shop-cart/details`,
+                success: `https://estetica-principal.netlify.app/shop-cart/details`,
                 failure: `${process.env.MERCADOPAGO_URL}/shop-cart`,
                 pending: `${process.env.MERCADOPAGO_URL}/pending`
             },
