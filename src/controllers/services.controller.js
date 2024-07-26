@@ -35,17 +35,17 @@ const getByName = async (req, res) => {
 }
 
 const create = async (req, res) => {
-    const file = req.file;
+   /*  const file = req.file;
     if (!file) {
         return res.status(400).send({ success: false, message: 'No se ha subido ningún archivo' });
-    }
+    } */
     try {
-        const format = ['image/png', 'image/jpg', 'image/jpeg'];
+       /*  const format = ['image/png', 'image/jpg', 'image/jpeg'];
         if (!format.includes(file.mimetype)) {
             return res.status(400).json({ success: false, message: 'Solo se permiten archivos con formato png, jpg y jpeg' })
         }
         const imageURL = await uploadImage.uploadImage(file.path, 'Image_Estetica');
-        req.body.image = imageURL;
+        req.body.image = imageURL; */
         const response = await service.create(req.body);
         res.json({ success: true, data: response });
     } catch (error) {

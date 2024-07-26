@@ -31,13 +31,7 @@ const getById = async (req, res) => {
     try {
         const { id } = req.params;
         // Obtener las ventas del usuario por su ID
-        const sales = await saleService.find(
-            {
-                where: {
-                    id_user: id
-                }
-            }
-        );
+        const sales = await saleService.findByUserId(id);
         const salesWithDetails = [];
         for (const sale of sales) {
             // Obtener los detalles de la venta por el ID de la venta
@@ -84,12 +78,23 @@ const getById = async (req, res) => {
         res.status(500).send({ success: false, message: error.message });
     }
 };
+// Simulando pago
 const simulatePayment = async (req, res) => {
     try {
-        // Obtener datos de la solicitud
-        const { total, userID, productos } = req.body;
+        console.log('Simulating payment...');
 
-        // Preparar los datos de los ítems
+        const { total, UserId, productos } = req.body;
+
+        // Verificar si productos está definido y es un array
+        if (!productos || !Array.isArray(productos)) {
+            throw new Error('Productos no definidos o no es un array');
+        }
+
+        console.log('Productos:', productos);
+        console.log('Total:', total);
+        console.log('UserId:', UserId);
+
+        // Asegúrate de que los nombres de los campos sean correctos
         const items = productos.map(producto => ({
             title: producto.nombre,
             unit_price: total / productos.length,
@@ -97,27 +102,36 @@ const simulatePayment = async (req, res) => {
             currency_id: "MXN",
         }));
 
-        // Simular la creación de una preferencia de pago
+        console.log('Items:', items);
+
         const result = {
             id: Math.floor(Math.random() * 1000000), // ID simulado
             items: items,
             total: total,
-            userID: userID
+            userID: UserId
         };
 
-        // Enviar notificación simulada a la URL de notificación
-        await axios.post(`https://back-estetica-production-710f.up.railway.app/api/v1/sales/webhook/${userID}`, {
+        console.log('Result:', result);
+
+        const webhookUrl = `http://localhost:5000/api/v1/sales/webhook/${UserId}`;
+        console.log('Webhook URL:', webhookUrl);
+
+        const paymentData = {
             type: "payment",
             data: {
                 id: result.id,
                 transaction_amount: total,
-                payment_method_id: "master",
-                payment_type_id: "credit_card",
+                payment_method_id: "simulated_method",
+                payment_type_id: "simulated_type"
             }
-        });
+        };
+
+        console.log('Payment data:', paymentData);
+
+        const axiosResponse = await axios.post(webhookUrl, paymentData);
+        console.log('Webhook response:', axiosResponse.data);
 
         res.json({ success: true, data: result });
-
     } catch (error) {
         console.error('Error simulating payment:', error.message);
         res.status(500).send({ success: false, message: error.message });
@@ -174,8 +188,85 @@ const createInMercadoPago = async (req, res) => {
         res.status(500).send({ success: false, message: error.message });
     }
 };
+const receiveWebhook = async (req, res) => {
+    try {
+        console.log('Received webhook notification');
+
+        const payment = req.body;
+        const userId = req.params.id;
+
+        console.log('Payment data:', payment);
+        console.log('User ID:', userId);
+
+        if (payment.type === "payment") {
+            const address = await addressesService.findOne(userId);
+            if (!address) {
+                throw new Error('Address not found for user');
+            }
+            console.log('Address from database:', address);
+
+            let paymentId = await paymentService.findByName(payment.data.payment_method_id);
+            if (!paymentId) {
+                paymentId = await paymentService.create({
+                    type: payment.data.payment_method_id,
+                    add_info: payment.data.payment_type_id
+                });
+            }
+            console.log('Payment ID from database:', paymentId);
+
+            const IdMethPay = paymentId.dataValues.id;
+
+            const newSale = await saleService.create({
+                id_user: userId,
+                id_payment: IdMethPay,
+                id_address: address.id,
+                shipping_status: "En proceso",
+                total: payment.data.transaction_amount,
+                date: new Date()
+            });
+            console.log('New sale created:', newSale);
+
+            const idSale = newSale.dataValues.id;
+            console.log('Sale ID:', idSale);
+
+            const saleDetails = await axios.get(`https://back-estetica-production-710f.up.railway.app/api/v1/carts/${userId}`);
+            const products = saleDetails.data.data;
+
+            // Verifica el tipo de datos y si es un array
+            console.log(Array.isArray(products)); // Esto debería imprimir true si `data` es un array
+            // Crea detalles de la venta
+            /* const saleDetailsPromises = products.map(product =>
+                saleDetailService.create({
+                    id_sale: idSale,
+                    id_product: product.id,
+                    amount: product.quantify || 1, // Asegúrate de que 'quantify' está definido
+                    unit_price: product.price, // Asegúrate de que 'priceid' está definido
+                    subtotal: (product.quantify || 1) * product.price // Asegúrate de que 'price' está definido
+                })
+            ); */
+            const resSaleDetail = await saleDetailService.create(products, idSale);
+            console.log('Sale detail created:', resSaleDetail);
+
+            // Elimina productos del carrito
+            await axios.delete(`https://back-estetica-production-710f.up.railway.app/api/v1/carts/${userId}`);
+            console.log('Cart cleared for user:', userId);
+
+            res.json({ success: true, message: 'Sale created successfully' });
+
+        } else {
+            console.log('Payment type is not "payment".');
+            res.json({ success: false, message: 'Invalid payment type' });
+        }
+
+    } catch (error) {
+        console.error('Error processing webhook notification:', error.message);
+        res.status(500).send({ success: false, message: error.message });
+    }
+};
 
 
+
+/* 
 const receiveWebhook = async (req, res) => {
     const payment = req.body;
     const userId = req.params.id;
@@ -235,7 +326,7 @@ const receiveWebhook = async (req, res) => {
         res.sendStatus(500);
     }
 };
-
+ */
 
 const update = async (req, res) => {
     try {
