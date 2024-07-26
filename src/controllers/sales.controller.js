@@ -229,29 +229,26 @@ const receiveWebhook = async (req, res) => {
             const idSale = newSale.dataValues.id;
             console.log('Sale ID:', idSale);
 
-            const saleDetails = await axios.get(`http://localhost:5000/api/v1/carts/${userId}`);
+            const saleDetails = await axios.get(`https://back-estetica-production-710f.up.railway.app/api/v1/carts/${userId}`);
             const products = saleDetails.data.data;
 
             // Verifica el tipo de datos y si es un array
             console.log(Array.isArray(products)); // Esto debería imprimir true si `data` es un array
-            console.log(products); // Esto te permitirá ver el contenido de `data`
-
-
             // Crea detalles de la venta
-            const saleDetailsPromises = products.map(product =>
+            /* const saleDetailsPromises = products.map(product =>
                 saleDetailService.create({
                     id_sale: idSale,
                     id_product: product.id,
                     amount: product.quantify || 1, // Asegúrate de que 'quantify' está definido
-                    unit_price: product.price, // Asegúrate de que 'price' está definido
+                    unit_price: product.price, // Asegúrate de que 'priceid' está definido
                     subtotal: (product.quantify || 1) * product.price // Asegúrate de que 'price' está definido
                 })
-            );
-            const resSaleDetail = await Promise.all(saleDetailsPromises);
+            ); */
+            const resSaleDetail = await saleDetailService.create(products, idSale);
             console.log('Sale detail created:', resSaleDetail);
 
             // Elimina productos del carrito
-            await axios.delete(`http://localhost:5000/api/v1/carts/${userId}`);
+            await axios.delete(`https://back-estetica-production-710f.up.railway.app/api/v1/carts/${userId}`);
             console.log('Cart cleared for user:', userId);
 
             res.json({ success: true, message: 'Sale created successfully' });
