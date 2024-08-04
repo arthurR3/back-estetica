@@ -5,132 +5,41 @@ import ServicesService from '../services/services.service.js'
 import DatesService from "../services/dates.service.js";
 import UsersService from "../services/users.service.js"
 import DateDetailService from "../services/datesDetail.service.js";
-import { response } from "express";
+import MailService from "../services/notification.service.js";
+const mailService = new MailService()
 const service = new DatesService();
 const usersService = new UsersService();
 const serviceS = new ServicesService();
 const datesDetail = new DateDetailService()
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.USER,
-        pass: process.env.PASS
+
+
+function generateRandomPassword(length = 12) {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+[]{}|;:,.<>?';
+    let password = '';
+    for (let i = 0; i < length; i++) {
+        const randomIndex = Math.floor(Math.random() * characters.length);
+        password += characters[randomIndex];
     }
-})
+    return password;
+}
 
-
-const sendEmail = async (email, citaData) => {
-    const mailOptions = {
-        from: process.env.USER,
-        to: email,
-        subject: 'Confirmación de cita',
-        html: `
-            <html>
-                <head>
-                    <style>
-                        body {
-                            font-family: Arial, sans-serif;
-                            background-color: #f4f4f4;
-                            padding: 20px;
-                        }
-                        .container {
-                            background-color: #fff;
-                            padding: 20px;
-                            border-radius: 5px;
-                            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-                        }
-                        h1 {
-                            color: #333;
-                            text-align: center;
-                        }
-                        p {
-                            color: #666;
-                            margin-bottom: 20px;
-                        }
-                        .cita-info {
-                            border-top: 1px solid #ccc;
-                            margin-top: 20px;
-                            padding-top: 20px;
-                        }
-                        .cita-info p {
-                            margin-bottom: 10px;
-                        }
-                    </style>
-                </head>
-                <body>
-                    <div class="container">
-                        <h1>Confirmación de cita</h1>
-                        <p>Estimado/a ${citaData.nombre},</p>
-                        <p>Su cita para el ${citaData.date} a las ${citaData.time} ha sido <b>AGENDADA</b>.</p>
-                        <div class="cita-info">
-                            <p><strong>Servicio:</strong> ${citaData.servicio}</p>
-                            <p><strong>Dirección:</strong> Ubicación: Calle Velázquez Ibarra, Colonia Centro, Huejutla de Reyes Hidalgo</p>
-                        </div>
-                        <p>Deberá CONFIRMAR su cita 2 HORAS antes de su cita</p>
-                        <p>Gracias por elegirnos. Esperamos verlo/a pronto. ESTETICA PRINCIPAL</p>
-                    </div>
-                </body>
-            </html>
-        `,
+const generateUniqueCode = async () => {
+    const codeExists = async (code) => {
+        const user = await usersService.findByCode(code);
+        return !!user;
     };
-    transporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-            console.log(error);
-        } else {
-            console.log('Email enviado: ', info.response);
-        }
-    });
+
+    let code;
+    let exists = true;
+
+    while (exists) {
+        let randomNumber = Math.floor(Math.random() * 100000);
+        code = String(randomNumber).padStart(5, '0');
+        exists = await codeExists(code); // Esta función debe verificar si el código ya existe
+    }
+
+    return code;
 };
-
-// Recordatorio de citas
-/* const checkAndSendReminders = async () => {
-  try {
-    const response = await axios.get('http://tu-api-url/appointments');
-    const appointments = response.data;
-
-    const now = new Date();
-
-    appointments.forEach((appointment) => {
-      const appointmentDate = new Date(appointment.date);
-      const hoursDifference = (appointmentDate - now) / 36e5;
-
-      if (hoursDifference >= 23 && hoursDifference < 24) {
-        sendEmail(
-          appointment.Usuario.email,
-          'Recordatorio de Cita',
-          `Tiene una cita en 24 horas. Por favor, confirme.`
-        );
-      } else if (hoursDifference >= 1 && hoursDifference < 2) {
-        if (appointment.date_status !== 'Confirmada') {
-          sendEmail(
-            appointment.Usuario.email,
-            'Recordatorio de Cita',
-            `Su cita es en 2 horas. Por favor, confirme o reprograme, de lo contrario será cancelada.`
-          );
-        } else {
-          sendEmail(
-            appointment.Usuario.email,
-            'Recordatorio Amistoso',
-            `Tiene una cita confirmada en 2 horas. ¡No olvide asistir!`
-          );
-        }
-      } else if (hoursDifference < 0 && appointment.date_status !== 'Confirmada') {
-        // Cancelar la cita
-        axios.put(`http://tu-api-url/appointments/${appointment.id}`, {
-          date_status: 'Cancelada',
-        });
-      }
-    });
-  } catch (error) {
-    console.error(error);
-  }
-};
-
-// Programar la tarea para que se ejecute cada hora
-cron.schedule('0 * * * *', () => {
-  console.log('Ejecutando tarea programada');
-  checkAndSendReminders();
-}); */
 
 const get = async (req, res) => {
     try {
@@ -239,18 +148,19 @@ const create = async (req, res) => {
     }
 };
   
+const createSinPago = async (req, res) => {
+    const { customer, total, data } = req.body;
+    let userId;
+    let userEmail;
+    let tempPassword;
+    let user = await usersService.findByEmail(customer.email);
+    const code = await generateUniqueCode();
 
-const createAppointment = async (req, res) => {
     try {
-        const { customer, total, data } = req.body;
-        let userId;
-        let user = await usersService.findByEmail(customer.email);
-
         if (!user) {
             // Crear un nuevo usuario si no existe
-            const hashPassword = await bcrypt.hash('contraEstetica2@24', 10);
-            console.log("Hashed Password:", hashPassword);
-
+            tempPassword = generateRandomPassword(12); // Generar una contraseña temporal
+            const hashPassword = await bcrypt.hash(tempPassword, 10);
             const newUser = await usersService.create({
                 id_role: 1,
                 id_frequency: 1,
@@ -260,29 +170,120 @@ const createAppointment = async (req, res) => {
                 email: customer.email,
                 password: hashPassword,
                 phone: customer.telefono,
+                code: code
             });
             userId = newUser.dataValues.id;
+            user = newUser.dataValues;
+            userEmail = customer.email;
         } else {
             userId = user.id;
+            userEmail = user.email;
         }
 
-        // Crear una única cita para el usuario
-        const newAppointment = await service.create({
+        // Crear la cita
+        const newDate = {
             id_user: userId,
-            id_payment: 6,
+            id_payment: 5,
             date: data.date,
             time: data.time,
-            total_price: total,
             paid: 0,
             remaining: total,
-            payment_status: 'pendiente',
-            date_status: 'pendiente'
-        });
+            payment_status: 'Pendiente',
+            date_status: 'Agendada'
+        };
+        const response = await service.create(newDate);
 
-        // Crear detalles de la cita para cada servicio seleccionado
+        // Obtener los servicios seleccionados
         const detailsPromises = data.service.map(async (serviceInfo) => {
             await datesDetail.create({
-                id_date: newAppointment.dataValues.id,
+                id_date: response.id,
+                id_service: serviceInfo.id,
+                price: serviceInfo.price,
+                duration: serviceInfo.duration
+            });
+        });
+
+        await Promise.all(detailsPromises);
+        // Preparar los datos para el correo
+        const citaData = {
+            nombre: `${user.name} ${user.last_name1}`, // Asumiendo que 'customer' contiene el nombre
+            servicio: await Promise.all(data.service.map(async (serviceInfo) => {
+                return {
+                    name: serviceInfo.name,
+                    price: serviceInfo.price
+                };
+            })),
+            date: data.date,
+            time: data.time,
+            payment_status: 'Pendiente'
+        };
+
+        // Enviar correo basado en si el usuario es nuevo o ya está registrado
+        if (tempPassword) {
+            // Nuevo usuario
+            await mailService.sendRegistrationEmail(userEmail, tempPassword, citaData);
+        } else {
+            // Usuario ya registrado
+            await mailService.sendConfirmation(userEmail, citaData);
+        }
+
+        res.json({ success: true });
+
+    } catch (error) {
+        console.error('Error al crear la cita:', error);
+        res.status(500).json({ success: false, message: 'Error al crear la cita' });
+    }
+}
+
+
+const createAppointment = async (req, res) => {
+    try {
+        const { customer, total, data } = req.body;
+        let userId;
+        let userEmail;
+        let tempPassword;
+        let user = await usersService.findByEmail(customer.email);
+        const code = await generateUniqueCode();
+        if (!user) {
+            // Crear un nuevo usuario si no existe
+            tempPassword = generateRandomPassword(12); // Generar una contraseña temporal
+            const hashPassword = await bcrypt.hash(tempPassword, 10);
+            const newUser = await usersService.create({
+                id_role: 1,
+                id_frequency: 1,
+                name: customer.nombre,
+                last_name1: customer.apellido,
+                last_name2: customer.apellidoMat,
+                email: customer.email,
+                password: hashPassword,
+                phone: customer.telefono,
+                code: code
+            });
+            userId = newUser.dataValues.id;
+            user = newUser.dataValues;
+            userEmail = customer.email;
+        } else {
+            userId = user.id;
+            userEmail = user.email;
+        }
+
+        // Crear la cita
+        const newDate = {
+            id_user: userId,
+            id_payment: 5,
+            date: data.date,
+            time: data.time,
+            paid: 0,
+            remaining: total,
+            payment_status: 'Pendiente',
+            date_status: 'Agendada'
+        };
+        const response = await service.create(newDate);
+
+        // Obtener los servicios seleccionados
+        const detailsPromises = data.service.map(async (serviceInfo) => {
+            await datesDetail.create({
+                id_date: response.id,
                 id_service: serviceInfo.id,
                 price: serviceInfo.price,
                 duration: serviceInfo.duration
@@ -302,7 +303,7 @@ const createAppointment = async (req, res) => {
                 unit_price: total,
                 quantity: 1,
                 currency_id: "MXN",
-            }],
+            }], 
             notification_url: `https://back-estetica-production-710f.up.railway.app/api/v1/dates/reciveWebHook/${userId}`,
             back_urls: {
                 success: `https://estetica-principal.netlify.app/user-info/citas-agendadas`,
@@ -386,5 +387,5 @@ const _delete = async (req, res) => {
 }
 
 export {
-    create, createAppointment, AppointmentWebhook, get, getByTime, getById, getCounts,getByDate, getByUserId, update, _delete
+    create, createSinPago, createAppointment, AppointmentWebhook, get, getByTime, getById, getCounts,getByDate, getByUserId, update, _delete
 };

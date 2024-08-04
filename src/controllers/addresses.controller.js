@@ -37,7 +37,7 @@ const update = async (req, res) => {
         const body = req.body;
         const response = await address.update(id, body);
         await logsServices.logSensitiveDataUpdate(req.ip, email, ' Actualizo su dirección') 
-
+        
         res.json(response);
     } catch (error) {
         res.status(500).send({ success: false, message: error.message });
