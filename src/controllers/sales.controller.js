@@ -1,14 +1,17 @@
 import axios from "axios";
 import PaymentsService from "../services/payments.service.js";
 import SalesService from "../services/sales.service.js";
-import CartsService from "../services/carts.service.js";
+import CartsService from '../services/carts.service.js';
 import SalesDetailService from "../services/salesDetail.service.js";
 import mercadopago from "mercadopago";
 import ProductsService from "../services/products.service.js";
 import AddressesService from "../services/addresses.service.js";
 import CategoriesService from '../services/categories.service.js'
 import BrandsService from '../services/brands.service.js'
-
+import MailService from "../services/notification.service.js";
+import UsersService from "../services/users.service.js";
+import Stripe from "stripe";
+const stripe = new Stripe(process.env.STRIPE_ACCESS)
 const addressesService = new AddressesService();
 const productService = new ProductsService();
 const cartService = new CartsService();
@@ -17,6 +20,9 @@ const saleDetailService = new SalesDetailService();
 const paymentService = new PaymentsService();
 const categoryService = new CategoriesService();
 const brandService = new BrandsService();
+const mailService = new MailService();
+const userService = new UsersService();
+
 
 const get = async (req, res) => {
     try {
@@ -144,17 +150,17 @@ const createInMercadoPago = async (req, res) => {
         mercadopago.configure({
             access_token: process.env.MERCADOPAGO_ACCESS_TOKEN
         });
-        console.log('Mercado Pago configured with access token');
+       // console.log('Mercado Pago configured with access token');
 
         // Obtener datos de la solicitud
         const response = req.body;
-        console.log('Request body:', response);
+        //console.log('Request body:', response);
 
         // Preparar los datos de los ítems
         const total = response.total;
         const userID = response.UserId;
-        console.log('Total amount:', total);
-        console.log('User ID:', userID);
+        /* console.log('Total amount:', total);
+        console.log('User ID:', userID); */
 
         const items = response.productos.map(producto => ({
             title: producto.nombre,
@@ -162,22 +168,22 @@ const createInMercadoPago = async (req, res) => {
             quantity: 1,
             currency_id: "MXN",
         }));
-        console.log('Items prepared for Mercado Pago:', items);
+        //console.log('Items prepared for Mercado Pago:', items);
         /*5474 9254 3267 0366*/
         // Crear la preferencia en Mercado Pago
         const result = await mercadopago.preferences.create({
             items: items,
             // URL a la que Mercado Pago enviará notificaciones sobre el pago (API)
-            notification_url: `https://back-estetica-production-710f.up.railway.app/api/v1/sales/webhook/${userID}`,
+            notification_url: `https://25a1-201-97-136-222.ngrok-free.app/api/v1/sales/webhook/${userID}`,
             // URLs a las que redirigirá al usuario luego de completar el pago (éxito, falla, pendiente)
             back_urls: {
-                success: `https://estetica-principal.netlify.app/shop-cart/details`,
+                success: `http://localhost:3000/shop-cart/details`,
                 failure: `${process.env.MERCADOPAGO_URL}/shop-cart`,
                 pending: `${process.env.MERCADOPAGO_URL}/pending`
             },
             auto_return: "approved"
         });
-        console.log('Mercado Pago preference created:', result);
+       // console.log('Mercado Pago preference created:', result);
 
         // Enviar respuesta al cliente
         res.json({ success: true, data: result });
@@ -188,15 +194,12 @@ const createInMercadoPago = async (req, res) => {
         res.status(500).send({ success: false, message: error.message });
     }
 };
-const receiveWebhook = async (req, res) => {
+/* const receiveWebhook = async (req, res) => {
     try {
         console.log('Received webhook notification');
 
         const payment = req.body;
         const userId = req.params.id;
-
-        console.log('Payment data:', payment);
-        console.log('User ID:', userId);
 
         if (payment.type === "payment") {
             const address = await addressesService.findOne(userId);
@@ -229,26 +232,14 @@ const receiveWebhook = async (req, res) => {
             const idSale = newSale.dataValues.id;
             console.log('Sale ID:', idSale);
 
-            const saleDetails = await axios.get(`https://back-estetica-production-710f.up.railway.app/api/v1/carts/${userId}`);
+            const saleDetails = await axios.get(`http://localhost:5000/api/v1/carts/${userId}`);
             const products = saleDetails.data.data;
 
-            // Verifica el tipo de datos y si es un array
-            console.log(Array.isArray(products)); // Esto debería imprimir true si `data` es un array
-            // Crea detalles de la venta
-            /* const saleDetailsPromises = products.map(product =>
-                saleDetailService.create({
-                    id_sale: idSale,
-                    id_product: product.id,
-                    amount: product.quantify || 1, // Asegúrate de que 'quantify' está definido
-                    unit_price: product.price, // Asegúrate de que 'priceid' está definido
-                    subtotal: (product.quantify || 1) * product.price // Asegúrate de que 'price' está definido
-                })
-            ); */
             const resSaleDetail = await saleDetailService.create(products, idSale);
             console.log('Sale detail created:', resSaleDetail);
 
             // Elimina productos del carrito
-            await axios.delete(`https://back-estetica-production-710f.up.railway.app/api/v1/carts/${userId}`);
+            await axios.delete(`http://localhost:5000/api/v1/carts/${userId}`);
             console.log('Cart cleared for user:', userId);
 
             res.json({ success: true, message: 'Sale created successfully' });
@@ -262,17 +253,16 @@ const receiveWebhook = async (req, res) => {
         console.error('Error processing webhook notification:', error.message);
         res.status(500).send({ success: false, message: error.message });
     }
-};
+}; */
 
-
-
-/* 
 const receiveWebhook = async (req, res) => {
     const payment = req.body;
     const userId = req.params.id;
 
     try {
         if (payment.type === "payment") {
+            console.log(payment)
+            console.log(payment)
             const data = payment.data; // Datos simulados o de Mercado Pago
 
             // Obtener la dirección del usuario desde la base de datos
@@ -297,22 +287,25 @@ const receiveWebhook = async (req, res) => {
             const idSale = newSale.dataValues.id;
 
             // Obtener los productos del carrito del usuario
-            const response = await axios.get(`https://back-estetica-production-710f.up.railway.app/api/v1/carts/${userId}`);
+           const response = await axios.get(`http://localhost:5000/api/v1/carts/${userId}`);
             const products = response.data.data;
 
-            // Crear detalles de la venta
-            for (const product of products) {
-                await saleDetailService.create({
-                    id_sale: idSale,
-                    id_product: product.id,
-                    amount: product.amount,
-                    unit_price: product.price,
-                    subtotal: product.price * product.amount
-                });
-            }
+            //const response = cartService.findOne(userId)
+            //const products = response;
+            await saleDetailService.create(products, idSale);
 
             // Eliminar productos del carrito
-            await axios.delete(`https://back-estetica-production-710f.up.railway.app/api/v1/carts/${userId}`);
+            await axios.delete(`http://localhost:5000/api/v1/carts/${userId}`);
+            //await cartService.delete(userId);
+            const detailSales = {
+                idSale,
+                transactionAmount: data.transaction_amount,
+                products,
+                address
+            };
+            const user = await userService.findOne(userId); // Asumiendo que tienes un servicio para obtener el correo del usuario
+            console.log(user.email)
+            await mailService.confirmationCompra(user.email, detailSales);
 
             // Enviar respuesta de éxito
             res.json({ success: true, message: 'Sale created successfully' });
@@ -326,8 +319,77 @@ const receiveWebhook = async (req, res) => {
         res.sendStatus(500);
     }
 };
- */
 
+
+const createSession = async (req, res) => {
+    const response = req.body;
+    const total = response.total;
+    const userID = response.UserId;
+    try {
+        const line_items = response.productos.map(producto => ({
+            price_data:{
+                currency: 'mxn',
+                product_data:{
+                    name: producto.nombre,
+                },
+                unit_amount: producto.unit_amount,
+            },
+            quantity: producto.quantity
+        }))
+        const session  = await stripe.checkout.sessions.create({
+            line_items:line_items,
+            mode: 'payment',
+            success_url: `http://localhost:3000/shop-cart/success?session_id={CHECKOUT_SESSION_ID}&userID=${userID}`,
+            cancel_url: 'http://localhost:3000/shop-cart',
+            client_reference_id: userID,
+            metadata:{
+                productos: JSON.stringify(response.productos),
+            }
+        })
+    
+        return res.json({url: session.url})
+    } catch (error) {
+        return res.status(500).json({message: error.message});
+    }
+}
+
+const receiveComplete = async (req, res) =>{
+    const {sessionId, userID } = req.body;
+    console.log(sessionId)
+    try {
+        const session = await stripe.checkout.sessions.retrieve(sessionId);
+        const address = await addressesService.findOne(userID);
+
+        let paymentId = await paymentService.findByName('visa');
+        const IdMethPay = paymentId.dataValues.id;
+        const newSale = await saleService.create({
+            id_user: userID,
+            id_payment: IdMethPay,
+            id_address: address.id,
+            shipping_status: "En proceso",
+            total: session.amount_total / 100,
+            date: new Date()
+        });
+        const productos = JSON.parse(session.metadata.productos);
+        const idSale = newSale.dataValues.id;
+        const detailSales = {
+            idSale,
+            transactionAmount: session.amount_total / 100,
+            productos,
+        };
+        await saleDetailService.create(productos, idSale);
+
+        await cartService.delete(userID);
+        const user = await userService.findOne(userID);
+        //console.log(user.email, detailSales) // Asumiendo que tienes un servicio para obtener el correo del usuario
+        await mailService.confirmationCompra(user.email, detailSales);
+        return res.json({ message: 'Compra completada exitosamente' });
+
+    } catch (error) {
+        return res.status(500).json({ message: 'Error al completar la compra', error: error });
+
+    }
+}   
 const update = async (req, res) => {
     try {
         const { id } = req.params;
@@ -350,5 +412,5 @@ const _delete = async (req, res) => {
 }
 
 export {
-    createInMercadoPago, simulatePayment, receiveWebhook, get, getById, update, _delete
+    createSession, simulatePayment, receiveComplete, get, getById, update, _delete
 };

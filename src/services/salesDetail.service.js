@@ -22,14 +22,14 @@ class SalesDetailService {
         const details = data.map(producto => ({
             id_sale: VentaID,
             id_product: producto.id,
-            amount: producto.quantify,
-            unit_price: producto.price,
-            subtotal: producto.quantify * producto.price,
+            amount: producto.quantity,
+            unit_price: producto.unit_amount/100,
+            subtotal: producto.quantity * (producto.unit_amount/100),
         }));
         const res = await SaleDetail.bulkCreate(details); //Realiza varias inserciones al mismo tiempo en una tabla.
         for (const producto of data) {
             const product = await productService.findOne(producto.id); 
-            const newStock = product.amount - producto.quantify;
+            const newStock = product.amount - producto.quantity;
             await productService.update(producto.id, { amount: newStock }); 
         }
         return res;

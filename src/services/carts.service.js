@@ -1,8 +1,10 @@
 import { Cart } from "../db/models/carts.model.js";
-
+import CartsDetailService from "./cartsDetail.service.js";
 class CartsService {
 
-    constructor() { }
+    constructor() {
+        this.cartsDetailService = new CartsDetailService();
+     }
 
     async find() {
         const res = await Cart.findAll();
@@ -34,9 +36,24 @@ class CartsService {
     }
 
 
-    async delete(id) {
-        const model = await this.findOne(id);
-        await model.destroy();
+    async delete(userId) {
+        // Primero, buscamos el carrito activo del usuario
+        const cart = await this.findOne(userId);
+        if (!cart) {
+            throw new Error(`Cart for user with id ${userId} not found`);
+        }
+
+        // Obtenemos el ID del carrito
+        const cartId = cart.id;
+
+        // Luego, eliminamos los detalles del carrito
+        const cartDetails = await this.cartsDetailService.findIdCart(cartId);
+        for (const detail of cartDetails) {
+            await this.cartsDetailService.delete(detail.id);
+        }
+
+        // Finalmente, eliminamos el carrito principal
+        await cart.destroy();
         return { deleted: true };
     }
 

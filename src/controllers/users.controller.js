@@ -18,7 +18,7 @@ const secretKey = process.env.SECRET_KEY
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-        user: process.env.USER, 
+        user: process.env.USER,
         pass: process.env.PASS
     }
 })
@@ -46,13 +46,13 @@ const generateCode = () => {
     return String(randomNumber).padStart(5, '0');
 }
 
-    const sendEmail = async (email, resetCode) => {
-        const mailOptions = {
-            from: process.env.USER,
-            to: email,
-            subject: 'Verificación de Correo Electronico',
-            text: `Por favor, para verificar tu correo electronico utiliza el siguiente codigo ${resetCode} . Este codigo Expira en 3 minutos.`
-        };
+const sendEmail = async (email, resetCode) => {
+    const mailOptions = {
+        from: process.env.USER,
+        to: email,
+        subject: 'Verificación de Correo Electronico',
+        text: `Por favor, para verificar tu correo electronico utiliza el siguiente codigo ${resetCode} . Este codigo Expira en 3 minutos.`
+    };
     transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
             console.log(error)
@@ -290,17 +290,8 @@ const login = async (req, res) => {
             nombre: response.name,
             lastName: response.last_name1,
             lastName2: response.last_name2,
-            email: response.email,
-            telefono: response.phone,
             rol: response.id_role,
             code: response.code,
-            address: {
-                muncipio: addressG.municipality,
-                colonia: addressG.cologne,
-                calle: addressG.street,
-                cp: addressG.cp
-            }
-
         }
         const token = jwt.sign({ user: usuario }, secretKey, { expiresIn: '2h' })
         await logService.logLogin(req.ip, email)
@@ -321,7 +312,7 @@ const updatePassword2 = async (req, res) => {
         }
         const isPassword = await bcrypt.compare(oldPassword, user.password);
         if (!isPassword) {
-            return res.status(400).json({ success: false, message: 'La contraseña Anterior no es correcta!, Intente de Nuevo'});
+            return res.status(400).json({ success: false, message: 'La contraseña Anterior no es correcta!, Intente de Nuevo' });
         }
         const hashPassword = await bcrypt.hash(newPassword, saltRounds);
         await service.update(user.id, { password: hashPassword });
@@ -359,7 +350,7 @@ const create = async (req, res) => {
             return res.status(400).json({ success: false, message: 'El correo ya esta registrado' });
         }
         const hashPassword = await bcrypt.hash(password, saltRounds);
-        const code = await generateUniqueCode(); 
+        const code = await generateUniqueCode();
         const userData = {
             id_role: user.id_role,
             id_frequency: user.id_frequency,
@@ -374,11 +365,17 @@ const create = async (req, res) => {
             answers: user.answers,
             code: code,
         };
-        const response = await service.create(userData);
-        const id_user = response.id;
-        await addressService.create({ ...address, id_user })
+        await service.create(userData);
+        /* const id_user = response.id;
+        await addressService.create({
+            id_user : id_user,
+            municipality: address.municipality,
+            cologne: address.cologne,
+            street: address.street,
+            cp: address.cp,
+        }) */
         await logService.logSensitiveDataUpdate(req.ip, email, 'Registró un nuevo usuario')
-        res.json({ success: true, data: response });
+        res.json({ success: true, message: 'Registrado Correctamente' });
     } catch (error) {
         res.status(500).send({ success: false, message: error.message });
     }
@@ -416,5 +413,5 @@ const _delete = async (req, res) => {
 }
 
 export {
-    create, get, getById, getByCode,update, _delete, login, sendConfirmationEmail, sendCodeEmail, verificationEmail, updatePassword, updatePassword2
+    create, get, getById, getByCode, update, _delete, login, sendConfirmationEmail, sendCodeEmail, verificationEmail, updatePassword, updatePassword2
 };
