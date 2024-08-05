@@ -14,6 +14,7 @@ import { Sale, SaleSchema } from './sales.model.js';
 import { SaleDetail, SaleDetailSchema } from './salesDetail.model.js';
 import { Cart, CartSchema } from './carts.model.js';
 import { CartDetail, CartDetailSchema } from './cartsDetail.model.js';
+import { SalesView, SalesViewSchema } from './sales_view.model.js';
 
 function setupModels(sequelize) {
     User.init(UserSchema, User.config(sequelize));
@@ -32,6 +33,7 @@ function setupModels(sequelize) {
     Cart.init(CartSchema, Cart.config(sequelize));
     CartDetail.init(CartDetailSchema, CartDetail.config(sequelize));
     ResetCode.init(CodeSchema, ResetCode.config(sequelize));
+    SalesView.init(SalesViewSchema, SalesView.config(sequelize));
 
     // Establecer relaciones
     Date.belongsTo(User, { foreignKey: 'id_user' }); // Una cita pertenece a un usuario.

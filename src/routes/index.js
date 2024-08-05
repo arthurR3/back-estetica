@@ -15,6 +15,7 @@ import salesRouter from './sales.router.js'
 import salesDetailRouter from './salesDetail.router.js'
 import cartsRouter from './carts.router.js'
 import cartsDetailRouter from './cartsDetail.router.js'
+import salesViewRouter from './sales_view.router.js'; 
 
 function routerApi(app) {
   const router = Router();
@@ -34,6 +35,7 @@ function routerApi(app) {
   router.use('/salesDetail', salesDetailRouter);
   router.use('/carts', cartsRouter);
   router.use('/cartsDetail', cartsDetailRouter);
+  router.use('/salesView', salesViewRouter);
 }
 
 export default routerApi;
