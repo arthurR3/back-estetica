@@ -26,6 +26,11 @@ const ServiceSchema = {
         type: DataTypes.STRING,
         field:'Nombre'
     },
+    id_category :{
+        allowNull: false,
+        type: DataTypes.INTEGER,
+        field:'id_categoria'
+    },
     description: {
         allowNull: false,
         type: DataTypes.STRING,
@@ -45,6 +50,12 @@ const ServiceSchema = {
         allowNull:true,
         type: DataTypes.STRING,
         field: 'Imagen'
+    },
+    status:{
+        allowNull: false,
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+        field: 'Estatus'
     }
 }
   

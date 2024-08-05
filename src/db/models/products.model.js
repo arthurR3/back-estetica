@@ -61,6 +61,12 @@ const ProductSchema = {
         type: DataTypes.STRING,
         field: 'Imagen'
     },
+    status:{
+        allowNull: false,
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+        field: 'Estatus'
+    }
 }
   
 export { Product, ProductSchema };

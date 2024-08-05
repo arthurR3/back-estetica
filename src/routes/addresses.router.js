@@ -6,7 +6,7 @@ router
     .get('/', get )
     .get('/:id', getById )
     .post('/', create )
-    .put('/:id', update )
+    .put('/:id/:email', update )
     .delete('/:id', _delete );
 
 export default router;

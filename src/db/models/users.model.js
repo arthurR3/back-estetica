@@ -51,11 +51,6 @@ const UserSchema = {
         type: DataTypes.INTEGER,
         field: 'id_frecuencia' // Nombre del campo en la bd
     },
-    id_address: { //llave foránea
-        allowNull: false,
-        type: DataTypes.INTEGER,
-        field: 'id_direccion' // Nombre del campo en la base de datos
-    },
     name: {
         allowNull: false,
         type: DataTypes.STRING,
@@ -85,17 +80,6 @@ const UserSchema = {
         allowNull: false,
         type: DataTypes.STRING,
         field: 'Telefono'
-    },
-    cp: {
-        allowNull: false,
-        type: DataTypes.STRING,
-        field: 'CP'
-    },
-    //Provisional este campo
-    address :{
-        allowNull: true,
-        type: DataTypes.STRING,
-        field: 'Direccion'
     },
     image: {
         allowNull: true,
@@ -127,6 +111,12 @@ const UserSchema = {
         allowNull: false,
         type: DataTypes.STRING,
         field:'Codigo'
+    },
+    status:{
+        allowNull: false,
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+        field: 'Estatus'
     }
 }
 

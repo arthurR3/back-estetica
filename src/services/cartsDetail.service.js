@@ -9,11 +9,28 @@ class CartsDetailService {
         return res;
     }
 
-    async findOne(id) {
-        const res = await CartDetail.findByPk(id);
+    async findOneProduct(cartId, id_product) {
+        const res = await CartDetail.findOne({
+            where: {
+                id_cart: cartId,
+                id_product: id_product
+            }
+        });
         return res;
     }
-
+    async findIdCart(id){
+        const res = await CartDetail.findAll({
+            where: {
+                id_cart: id
+            }
+        });
+        return res;
+    }
+    async findOne(id){
+        const res = await CartDetail.findByPk(id)
+        return res;
+    }
+    
     async create(data) {
         const res = await CartDetail.create(data);
         return res;

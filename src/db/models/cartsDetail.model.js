@@ -26,7 +26,7 @@ const CartDetailSchema = {
         type: DataTypes.INTEGER,
         field: 'id_carrito' // Nombre del campo en la base de datos
     },
-    id_product: { //llave foránea
+    id_product : { //llave foránea
         allowNull: false,
         type: DataTypes.INTEGER,
         field: 'id_producto' // Nombre del campo en la base de datos
