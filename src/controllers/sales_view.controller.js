@@ -3,6 +3,7 @@ const salesViewService = new SalesViewService();
 
 const getSalesView = async (req, res) => {
     try {
+        
         const response = await salesViewService.find();
         return res.json(response);
     } catch (error) {
