@@ -100,6 +100,23 @@ const update = async (req, res) => {
     }
 };
 
+const updateCartItems = async (req, res) => {
+    const {customerId, productId} = req.params
+    const { cantidad } = req.body;
+try {
+    const cart = await cartService.findOne(customerId);
+    if (!cart) {
+        return res.status(404).json({ success: false, message: 'Carrito no encontrado' });
+    }
+
+    const productIndex = cart.items.findIndex(item => item.id === productId);
+
+
+} catch (error) {
+    
+}
+}
+
 // NO LO NECESITO
 
 const _delete = async (req, res) => {

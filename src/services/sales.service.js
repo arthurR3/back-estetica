@@ -90,6 +90,22 @@ class SalesService {
             throw error;
         }
     }
+
+    async getTotalDeliveredSales() {
+        try {
+            const totalIncome = await Sale.sum('total', {
+                where: {
+                    shipping_status: 'Entregado'
+                }
+            });
+
+            return totalIncome || 0; // Devuelve 0 si no hay ingresos
+        } catch (error) {
+            console.error('Error al obtener el total de ventas entregadas:', error);
+            throw error;
+        }
+    }
+
     
 
     async create(data) {

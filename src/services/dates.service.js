@@ -5,6 +5,7 @@ import { Service } from "../db/models/services.model.js";
 import { DateDetail } from "../db/models/datesDetail.model.js";
 import Sequelize from "sequelize";
 import { where } from "sequelize";
+import { SaleDetail } from "../db/models/salesDetail.model.js";
 class DatesService {
 
     constructor() { }
@@ -69,6 +70,13 @@ class DatesService {
         return res;
     }
 
+    async findById(id) {
+        const res = await Date.findAll({
+            where:{ id : id}
+        })
+        return res
+    }
+
     async findOne(id) {
         const res = await Date.findByPk(id);
         return res;
@@ -102,6 +110,20 @@ class DatesService {
         return res;
     }
 
+    async getTotalAttendedSales() {
+        try {
+            const totalIncome = await Date.sum('paid', {
+                where: {
+                    date_status: 'Atendida'
+                }
+            });
+
+            return totalIncome || 0; // Devuelve 0 si no hay ingresos
+        } catch (error) {
+            console.error('Error al obtener el total de ventas atendidas:', error);
+            throw error;
+        }
+    }
     async findOneDate(id) {
         const res = await Date.findAll({
             where: {
@@ -150,7 +172,7 @@ class DatesService {
         })
         const atendidas = await Date.count({
             where: {
-                date_status: 'Atendidas'
+                date_status: 'Atendida'
             }
         })
         return { confirmadas, pendientes, canceladas, atendidas };
@@ -162,6 +184,11 @@ class DatesService {
     }
 
     async update(id, data) {
+        const model = await Date.findByPk(id);
+        const res = await model.update(data);
+        return res;
+    }
+    async updateDate(id, data) {
         const model = await this.findOne(id);
         const res = await model.update(data);
         return res;

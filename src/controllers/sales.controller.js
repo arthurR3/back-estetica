@@ -390,6 +390,16 @@ const receiveComplete = async (req, res) =>{
 
     }
 }   
+
+const getTotalDeliveredSales = async (req, res) => {
+    try {
+        const totalIncome = await saleService.getTotalDeliveredSales();
+        res.json({ total: totalIncome });
+    } catch (error) {
+        res.status(500).json({ error: 'Error al obtener el total de ventas entregadas' });
+    }
+};
+
 const update = async (req, res) => {
     try {
         const { id } = req.params;
@@ -412,5 +422,5 @@ const _delete = async (req, res) => {
 }
 
 export {
-    createSession, simulatePayment, receiveComplete, get, getById, update, _delete
+    createSession, getTotalDeliveredSales, simulatePayment, receiveComplete, get, getById, update, _delete
 };
