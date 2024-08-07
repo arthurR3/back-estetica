@@ -189,7 +189,7 @@ const createSinPago = async (req, res) => {
             paid: 0,
             remaining: total,
             payment_status: 'Pendiente',
-            date_status: 'Agendada'
+            date_status: 'P_Confirmar'
         };
         const response = await service.create(newDate);
 
@@ -206,6 +206,8 @@ const createSinPago = async (req, res) => {
         await Promise.all(detailsPromises);
         // Preparar los datos para el correo
         const citaData = {
+            idCita: response.id,
+            idUser: userId,
             nombre: `${user.name} ${user.last_name1}`, // Asumiendo que 'customer' contiene el nombre
             servicio: await Promise.all(data.service.map(async (serviceInfo) => {
                 return {
@@ -347,7 +349,60 @@ const AppointmentWebhook = async (req, res) => {
         res.sendStatus(500); // Responder con un código 500 en caso de error
     }
 };
+const confirmAppointment = async (req, res) => {
+    const { appointmentId, userID } = req.body;
 
+    try {
+        // Obtener la cita agendada del usuario
+        const appointments = await service.findById(appointmentId);
+
+        // Depurar: Verificar qué datos se reciben
+
+        // Verificar que appointments es un array y contiene al menos un elemento
+        if (!Array.isArray(appointments) || appointments.length === 0) {
+            return res.status(404).json({ message: 'Cita no encontrada.' });
+        }
+
+        // Acceder a la primera cita en el array
+        const appointment = appointments[0];
+        console.log('Primera cita en el array:', appointment);
+
+        // Verificar que appointment tiene dataValues
+        if (!appointment || !appointment.dataValues) {
+            console.log('La cita no contiene dataValues.');
+            return res.status(500).json({ message: 'Error al acceder a los datos de la cita.' });
+        }
+
+        // Acceder a los datos reales de la cita
+        const appointmentData = appointment.dataValues;
+        console.log('Datos de la cita:', appointmentData);
+
+        // Verificar que la cita esté en estado "Agendada"
+        if (appointmentData.date_status !== 'P_Confirmar') {
+            console.log('La cita no está en estado "Agendada".');
+            return res.status(400).json({ message: 'La cita no está en estado "Agendada".' });
+        }
+
+        // Confirmar la cita
+        const data = { date_status: 'Confirmada' };
+        await service.update(appointmentId, data);
+
+        // Obtener el correo del usuario
+        const user = await usersService.findOne(userID);
+        console.log('Correo del usuario:', user);
+
+        // Opcional: Enviar correo de confirmación si es necesario
+        // await mailService.sendConfirmation(user.email, appointmentData);
+
+        // Responder con éxito
+        return res.json({ message: 'Cita confirmada exitosamente.' });
+
+    } catch (error) {
+        // Manejar errores
+        console.error('Error al confirmar la cita:', error);
+        return res.status(500).json({ message: 'Error al confirmar la cita', error: error });
+    }
+};
 
 
 const cancelation = async (req, res) => {
@@ -369,12 +424,21 @@ const update = async (req, res) => {
     try {
         const { id } = req.params;
         const body = req.body;
-        const response = await service.update(id, body);
+        const response = await service.updateDate(id, body);
         res.json(response);
     } catch (error) {
         res.status(500).send({ success: false, message: error.message });
     }
 }
+
+const getTotalAttendedSales = async (req, res) => {
+    try {
+        const totalIncome = await service.getTotalAttendedSales();
+        res.json({ total: totalIncome });
+    } catch (error) {
+        res.status(500).json({ error: 'Error al obtener el total de ventas atendidas' });
+    }
+};
 
 const _delete = async (req, res) => {
     try {
@@ -387,5 +451,5 @@ const _delete = async (req, res) => {
 }
 
 export {
-    create, createSinPago, createAppointment, AppointmentWebhook, get, getByTime, getById, getCounts,getByDate, getByUserId, update, _delete
+    create, createSinPago, getTotalAttendedSales, createAppointment, confirmAppointment, AppointmentWebhook, get, getByTime, getById, getCounts,getByDate, getByUserId, update, _delete
 };

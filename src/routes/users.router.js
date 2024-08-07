@@ -1,6 +1,6 @@
 import { Router } from 'express';
 const router = Router(); 
-import { get, getById, create, update, _delete, login, sendConfirmationEmail,sendCodeEmail, verificationEmail, updatePassword, getSecretQuestion, verifySecretAnswer, updatePassword2, getByCode} from '../controllers/users.controller.js';
+import { get, getById, create, update, _delete, login, loginAdmin, sendConfirmationEmail,sendCodeEmail, verificationEmail, updatePassword, getSecretQuestion, verifySecretAnswer, updatePassword2, getByCode} from '../controllers/users.controller.js';
 import upload from '../config/multerConfig.js'
 router
     .get('/', get )
@@ -8,6 +8,7 @@ router
     .get('/code/:code', getByCode )
     .post('/', create )
     .post('/login', login)
+    .post('/loginAdmin', loginAdmin)
     .post('/recover-password', sendCodeEmail)
     .post('/confirmation-email', sendConfirmationEmail)
     .post('/verification-password', verificationEmail)

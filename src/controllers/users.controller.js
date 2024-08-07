@@ -302,6 +302,56 @@ const login = async (req, res) => {
 }
 
 
+const loginAdmin = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        const response = await service.findByEmail(email);
+        if (!response) {
+            return res.status(401).json({ success: false, message: 'Correo electronico incorrecto!' })
+        }
+
+        if (blockedUsers[response.id]) {
+            await logService.logLoginBlock(req.ip, email)
+            return res.status(403).json({ success: false, message: 'Excediste los limites de intento, espere un 1min para volver a intentarlo.' })
+        }
+        if(response.id_role === 2){
+            const isPassword = await bcrypt.compare(password, response.password)
+            if (!isPassword) {
+                response.numIntentos = (response.numIntentos || 0) + 1;
+                console.log('No. ', response.numIntentos)
+                if (response.numIntentos === 3) {
+                    blockedUsers[response.id] = true;
+                    setTimeout(() => {
+                        delete blockedUsers[response.id]
+                        response.numIntentos = 0;
+                        service.update(response.id, { numIntentos: response.numIntentos })
+                    }, 60000)
+                } else {
+                    await service.update(response.id, { numIntentos: response.numIntentos })
+                }
+                return res.status(401).json({ success: false, message: 'Contraseña incorrecta' })
+            }
+    
+            const usuario = {
+                idUser: response.id,
+                nombre: response.name,
+                lastName: response.last_name1,
+                lastName2: response.last_name2,
+                rol: response.id_role,
+            }
+            const token = jwt.sign({ user: usuario }, secretKey, { expiresIn: '2h' })
+            await logService.logLogin(req.ip, email)
+            res.json({ success: true, data: token })
+        }else{
+            return res.status(403).json({ success: false, message: 'Usuario no tiene permisos de administrador' })
+        }
+        
+    } catch (error) {
+        res.status(500).send({ success: false, message: error.message })
+    }
+}
+
+
 const updatePassword2 = async (req, res) => {
     try {
         const { oldPassword, newPassword } = req.body;
@@ -413,5 +463,5 @@ const _delete = async (req, res) => {
 }
 
 export {
-    create, get, getById, getByCode, update, _delete, login, sendConfirmationEmail, sendCodeEmail, verificationEmail, updatePassword, updatePassword2
+    create, get, getById, getByCode, update, _delete, login, loginAdmin, sendConfirmationEmail, sendCodeEmail, verificationEmail, updatePassword, updatePassword2
 };

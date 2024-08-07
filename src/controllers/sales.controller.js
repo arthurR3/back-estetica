@@ -339,8 +339,8 @@ const createSession = async (req, res) => {
         const session  = await stripe.checkout.sessions.create({
             line_items:line_items,
             mode: 'payment',
-            success_url: `https://estetica-principal.netlify.app/shop-cart/success?session_id={CHECKOUT_SESSION_ID}&userID=${userID}`,
-            cancel_url: 'https://estetica-principal.netlify.app/shop-cart',
+            success_url: `http://localhost:3000/shop-cart/success?session_id={CHECKOUT_SESSION_ID}&userID=${userID}`,
+            cancel_url: 'http://localhost:3000/shop-cart',
             client_reference_id: userID,
             metadata:{
                 productos: JSON.stringify(response.productos),
@@ -390,6 +390,16 @@ const receiveComplete = async (req, res) =>{
 
     }
 }   
+
+const getTotalDeliveredSales = async (req, res) => {
+    try {
+        const totalIncome = await saleService.getTotalDeliveredSales();
+        res.json({ total: totalIncome });
+    } catch (error) {
+        res.status(500).json({ error: 'Error al obtener el total de ventas entregadas' });
+    }
+};
+
 const update = async (req, res) => {
     try {
         const { id } = req.params;
@@ -412,5 +422,5 @@ const _delete = async (req, res) => {
 }
 
 export {
-    createSession, simulatePayment, receiveComplete, get, getById, update, _delete
+    createSession, getTotalDeliveredSales, simulatePayment, receiveComplete, get, getById, update, _delete
 };
