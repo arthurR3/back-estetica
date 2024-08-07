@@ -339,8 +339,8 @@ const createSession = async (req, res) => {
         const session  = await stripe.checkout.sessions.create({
             line_items:line_items,
             mode: 'payment',
-            success_url: `http://localhost:3000/shop-cart/success?session_id={CHECKOUT_SESSION_ID}&userID=${userID}`,
-            cancel_url: 'http://localhost:3000/shop-cart',
+            success_url: `https://estetica-principal.netlify.app/shop-cart/success?session_id={CHECKOUT_SESSION_ID}&userID=${userID}`,
+            cancel_url: 'https://estetica-principal.netlify.app/shop-cart',
             client_reference_id: userID,
             metadata:{
                 productos: JSON.stringify(response.productos),

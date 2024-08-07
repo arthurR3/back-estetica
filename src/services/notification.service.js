@@ -24,7 +24,7 @@ class MailService {
         const servicesHtml = citaData.servicio.map(service => {
             return `<p><strong>Servicio:</strong> ${service.name}, Precio:$ ${service.price.toFixed(2)}</p>`;
         }).join('');
-        const confirmationURL = `http://localhost:3000/confirmacion-cita?appointmentId=${citaData.idCita}&userID=${citaData.idUser}`;
+        const confirmationURL = `https://estetica-principal.netlify.app/confirmacion-cita?appointmentId=${citaData.idCita}&userID=${citaData.idUser}`;
         const mailOptions = {
             from: process.env.USER,
             to: email,
