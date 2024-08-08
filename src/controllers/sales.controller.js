@@ -87,7 +87,7 @@ const getById = async (req, res) => {
 // Simulando pago
 const simulatePayment = async (req, res) => {
     try {
-        console.log('Simulating payment...');
+       // console.log('Simulating payment...');
 
         const { total, UserId, productos } = req.body;
 
@@ -96,9 +96,9 @@ const simulatePayment = async (req, res) => {
             throw new Error('Productos no definidos o no es un array');
         }
 
-        console.log('Productos:', productos);
-        console.log('Total:', total);
-        console.log('UserId:', UserId);
+       // console.log('Productos:', productos);
+       // console.log('Total:', total);
+       // console.log('UserId:', UserId);
 
         // Asegúrate de que los nombres de los campos sean correctos
         const items = productos.map(producto => ({
@@ -108,7 +108,7 @@ const simulatePayment = async (req, res) => {
             currency_id: "MXN",
         }));
 
-        console.log('Items:', items);
+       // console.log('Items:', items);
 
         const result = {
             id: Math.floor(Math.random() * 1000000), // ID simulado
@@ -117,10 +117,10 @@ const simulatePayment = async (req, res) => {
             userID: UserId
         };
 
-        console.log('Result:', result);
+     //   console.log('Result:', result);
 
         const webhookUrl = `http://localhost:5000/api/v1/sales/webhook/${UserId}`;
-        console.log('Webhook URL:', webhookUrl);
+        //console.log('Webhook URL:', webhookUrl);
 
         const paymentData = {
             type: "payment",
@@ -132,10 +132,10 @@ const simulatePayment = async (req, res) => {
             }
         };
 
-        console.log('Payment data:', paymentData);
+       // console.log('Payment data:', paymentData);
 
         const axiosResponse = await axios.post(webhookUrl, paymentData);
-        console.log('Webhook response:', axiosResponse.data);
+      //  console.log('Webhook response:', axiosResponse.data);
 
         res.json({ success: true, data: result });
     } catch (error) {
@@ -261,8 +261,8 @@ const receiveWebhook = async (req, res) => {
 
     try {
         if (payment.type === "payment") {
-            console.log(payment)
-            console.log(payment)
+            //console.log(payment)
+           // console.log(payment)
             const data = payment.data; // Datos simulados o de Mercado Pago
 
             // Obtener la dirección del usuario desde la base de datos
@@ -304,7 +304,7 @@ const receiveWebhook = async (req, res) => {
                 address
             };
             const user = await userService.findOne(userId); // Asumiendo que tienes un servicio para obtener el correo del usuario
-            console.log(user.email)
+            //console.log(user.email)
             await mailService.confirmationCompra(user.email, detailSales);
 
             // Enviar respuesta de éxito
@@ -355,7 +355,7 @@ const createSession = async (req, res) => {
 
 const receiveComplete = async (req, res) =>{
     const {sessionId, userID } = req.body;
-    console.log(sessionId)
+   // console.log(sessionId)
     try {
         const session = await stripe.checkout.sessions.retrieve(sessionId);
         const address = await addressesService.findOne(userID);

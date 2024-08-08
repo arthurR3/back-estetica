@@ -118,7 +118,7 @@ const sendConfirmationEmail = async (req, res) => {
         if (existingCode) {
             if (existingCode.expirationTime > new Date()) {
                 // El código es existente y aún no ha expirado
-                console.log('Código existente válido. Código:', existingCode.resetCode);
+                //console.log('Código existente válido. Código:', existingCode.resetCode);
                 await sendEmail(email, existingCode.resetCode);
                 expirationTime = existingCode.expirationTime; // Asignar expirationTime aquí
             } else {
@@ -153,7 +153,7 @@ const sendCodeEmail = async (req, res) => {
     try {
         const { email } = req.body;
         const user = await service.findByEmail(email);
-        console.log('User', user)
+       // console.log('User', user)
         if (!user) {
             return res.status(402).json({ success: false, message: 'El correo no está registrado' });
         }
@@ -167,7 +167,7 @@ const sendCodeEmail = async (req, res) => {
         if (existingCode) {
             if (existingCode.expirationTime > new Date()) {
                 // El código es existente y aún no ha expirado
-                console.log('Código existente válido. Código:', existingCode.resetCode);
+               // console.log('Código existente válido. Código:', existingCode.resetCode);
                 await sendEmail(email, existingCode.resetCode);
                 expirationTime = existingCode.expirationTime; // Asignar expirationTime aquí
             } else {
@@ -185,7 +185,7 @@ const sendCodeEmail = async (req, res) => {
         } else {
             // No existe un código para este correo electrónico, generar uno nuevo y crear un registro en la base de datos
             const resetCode = generateCode();
-            console.log('No existe ningún código existente. Generando nuevo código:', resetCode);
+          //  console.log('No existe ningún código existente. Generando nuevo código:', resetCode);
             expirationTime = new Date(Date.now() + 3 * 60 * 1000); // Asignar expirationTime aquí
 
             await codeService.create({ userEmail: user.email, resetCode, expirationTime });
@@ -271,7 +271,7 @@ const login = async (req, res) => {
         const isPassword = await bcrypt.compare(password, response.password)
         if (!isPassword) {
             response.numIntentos = (response.numIntentos || 0) + 1;
-            console.log('No. ', response.numIntentos)
+         //   console.log('No. ', response.numIntentos)
             if (response.numIntentos === 3) {
                 blockedUsers[response.id] = true;
                 setTimeout(() => {
@@ -318,7 +318,7 @@ const loginAdmin = async (req, res) => {
             const isPassword = await bcrypt.compare(password, response.password)
             if (!isPassword) {
                 response.numIntentos = (response.numIntentos || 0) + 1;
-                console.log('No. ', response.numIntentos)
+             //   console.log('No. ', response.numIntentos)
                 if (response.numIntentos === 3) {
                     blockedUsers[response.id] = true;
                     setTimeout(() => {

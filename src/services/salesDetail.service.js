@@ -17,7 +17,7 @@ class SalesDetailService {
 
     async create(data, VentaID) {
         //const res = await SaleDetail.create(data);
-        console.log(data)
+       // console.log(data)
         // Insertar los detalles de venta en la tabla DetalleVenta
         const details = data.map(producto => ({
             id_sale: VentaID,

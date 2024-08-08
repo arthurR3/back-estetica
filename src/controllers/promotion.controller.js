@@ -54,9 +54,9 @@ const createPromotion = async (req, res) => {
             id_product : req.body.productId || null,
             id_service : req.body.serviceId || null,
         }
-        console.log(data)
+      //  console.log(data)
         const promotion = await promotionService.create(data);
-        console.log(promotion)
+      //  console.log(promotion)
         res.status(201).json(promotion);
     } catch (error) {
         res.status(400).json({ error: error.message });

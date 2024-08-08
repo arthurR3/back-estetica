@@ -18,7 +18,7 @@ const getById = async (req, res) => {
         const { id } = req.params;
         const response = await cartService.findOne(id);
         if(response === null){
-            console.log([])
+            //console.log([])
             return res.json([]);
         }  
         let idCart = response.dataValues.id;
@@ -58,7 +58,7 @@ const update = async (req, res) => {
         const userId = req.params.id;
         const products = req.body;
         let idCart;
-        console.log(products.state)
+        //console.log(products.state)
         let cart = await cartService.findOne(userId);
         if (!cart) {
             // Si no existe un carrito activo, crea uno nuevo
@@ -127,7 +127,7 @@ const _delete = async (req, res) => {
         // Borrar todos los productos del carrito
         const cartDetail = await CartDetailService.findIdCart(idCart);
 
-        console.log(cartDetail)
+        //console.log(cartDetail)
         for (const detail of cartDetail) {
             await CartDetailService.delete(detail.dataValues.id);
         }
