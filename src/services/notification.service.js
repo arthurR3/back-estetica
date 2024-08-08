@@ -20,7 +20,7 @@ class MailService {
     }
 
     async sendConfirmation(email, citaData) {
-        console.log(citaData.servicio)
+      //  console.log(citaData.servicio)
         const servicesHtml = citaData.servicio.map(service => {
             return `<p><strong>Servicio:</strong> ${service.name}, Precio:$ ${service.price.toFixed(2)}</p>`;
         }).join('');
@@ -82,8 +82,8 @@ class MailService {
                             ${servicesHtml}
                             <p><strong>Dirección:</strong> Ubicación: Calle Velázquez Ibarra, Colonia Centro, Huejutla de Reyes Hidalgo</p>
                         </div>
-                        <p>${citaData.payment_status === 'Pendiente' ? 'Deberá CONFIRMAR su cita en el siguiente enlace: (Vigencia: 2 horas antes de recibir la cita, de lo contrario, será CANCELADA) ' : ''} </p>
-                        ${citaData.payment_status === 'Pendiente' ? `<a href="${confirmationURL}" class="btn">Confirmar Cita</a>` : ''}
+                        <p>${citaData.date_status === 'P_Confirmar' ? 'Deberá CONFIRMAR su cita en el siguiente enlace: (Vigencia: 2 horas antes de recibir la cita, de lo contrario, será CANCELADA) ' : ''} </p>
+                        ${citaData.date_status === 'P_Confirmar' ? `<a href="${confirmationURL}" class="btn">Confirmar Cita</a>` : ''}
                         <p>Gracias por elegirnos. Esperamos verlo/a pronto. ESTETICA PRINCIPAL EMMA</p>
                     </div>
                 </body>
@@ -94,7 +94,7 @@ class MailService {
     };
 
     async sendCancelEmail(email, citaData) {
-        console.log(citaData.servicio)
+      //  console.log(citaData.servicio)
         const servicesHtml = citaData.servicio.map(service => {
             return `<p><strong>Servicio:</strong> ${service.name}, Precio: ${service.price}</p>`;
         }).join('');

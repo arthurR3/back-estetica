@@ -313,11 +313,11 @@ const createAppointment = async (req, res) => {
                 pending: `${process.env.MERCADOPAGO_URL}/appointments/pending`
             },
         });
-        console.log("Payment Preference Created");
+       // console.log("Payment Preference Created");
 
         res.json({ success: true, data: appointment });
     } catch (error) {
-        console.error('Error al crear la cita:', error);
+       // console.error('Error al crear la cita:', error);
         res.status(500).send({ success: false, message: error.message });
     }
 };
@@ -327,7 +327,7 @@ const AppointmentWebhook = async (req, res) => {
     try {
         const user = await usersService.findOne(userId);
         const appointments = await service.findOneDate(userId); // Cambiado de 'payments' a 'appointments'
-        console.log("Appointment Data:", appointments);
+       // console.log("Appointment Data:", appointments);
 
         if (appointment.type === "payment") {
             const appointmentPromises = appointments.map(async (appointment) => {
@@ -365,21 +365,21 @@ const confirmAppointment = async (req, res) => {
 
         // Acceder a la primera cita en el array
         const appointment = appointments[0];
-        console.log('Primera cita en el array:', appointment);
+       // console.log('Primera cita en el array:', appointment);
 
         // Verificar que appointment tiene dataValues
         if (!appointment || !appointment.dataValues) {
-            console.log('La cita no contiene dataValues.');
+           // console.log('La cita no contiene dataValues.');
             return res.status(500).json({ message: 'Error al acceder a los datos de la cita.' });
         }
 
         // Acceder a los datos reales de la cita
         const appointmentData = appointment.dataValues;
-        console.log('Datos de la cita:', appointmentData);
+       // console.log('Datos de la cita:', appointmentData);
 
         // Verificar que la cita esté en estado "Agendada"
         if (appointmentData.date_status !== 'P_Confirmar') {
-            console.log('La cita no está en estado "Agendada".');
+      //      console.log('La cita no está en estado "Agendada".');
             return res.status(400).json({ message: 'La cita no está en estado "Agendada".' });
         }
 
@@ -389,7 +389,7 @@ const confirmAppointment = async (req, res) => {
 
         // Obtener el correo del usuario
         const user = await usersService.findOne(userID);
-        console.log('Correo del usuario:', user);
+       // console.log('Correo del usuario:', user);
 
         // Opcional: Enviar correo de confirmación si es necesario
         // await mailService.sendConfirmation(user.email, appointmentData);
