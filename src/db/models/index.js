@@ -20,6 +20,9 @@ import { DateDetail, DateDetailSchema } from './datesDetail.model.js';
 import { Promotion, PromotionSchema } from './promotion.model.js';
 import { HGRALSchema, HorarioG } from './horarioGnral.model.js';
 import { HEXPSchema, HorarioEXP } from './horarioException.model.js';
+
+import { SalesView, SalesViewSchema } from './sales_view.model.js';
+
 function setupModels(sequelize) {
     User.init(UserSchema, User.config(sequelize));
     UserNR.init(UserNoRegistredSchema, UserNR.config(sequelize));
@@ -43,6 +46,9 @@ function setupModels(sequelize) {
     Promotion.init(PromotionSchema, Promotion.config(sequelize));
     HorarioG.init(HGRALSchema, HorarioG.config(sequelize));
     HorarioEXP.init(HEXPSchema, HorarioEXP.config(sequelize));
+
+    SalesView.init(SalesViewSchema, SalesView.config(sequelize));
+
     // Establecer relaciones
     Date.belongsTo(User, { foreignKey: 'id_user' }); // Una cita pertenece a un usuario.
     User.hasMany(Date, { foreignKey: 'id_user' }); // Un usuario puede tener muchas citas.

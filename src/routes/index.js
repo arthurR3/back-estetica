@@ -20,6 +20,9 @@ import DatesDetailRouter from './datesDetail.router.js'
 import PromotionRouter from './promotion.router.js'
 import HorarioGnralRouter from './horarioGnral.router.js'
 import HorarioEXPRouter from './horarioException.router.js'
+
+import salesViewRouter from './sales_view.router.js'; 
+
 function routerApi(app) {
   const router = Router();
   app.use('/api/v1', router); 
@@ -43,6 +46,9 @@ function routerApi(app) {
   router.use('/promotion', PromotionRouter);
   router.use('/horarioGnral', HorarioGnralRouter);
   router.use('/horarioEXP', HorarioEXPRouter);
+
+  router.use('/salesView', salesViewRouter);
+
 }
 
 export default routerApi;
