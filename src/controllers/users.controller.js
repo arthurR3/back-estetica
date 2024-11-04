@@ -305,6 +305,7 @@ const login = async (req, res) => {
         const usuario = {
             idUser: response.id,
             nombre: response.name,
+            email:email,
             lastName: response.last_name1,
             lastName2: response.last_name2,
             rol: response.id_role,

@@ -8,12 +8,12 @@ dotenv.config();
 const port = process.env.PORT || 3000;
 
 const corsOptions = {
-    origin: ['https://estetica-principal.netlify.app', 'http://localhost:3000'],  // Reemplaza con la URL de tu frontend
+    origin: ['https://estetica-principal.netlify.app','https://estetica-emma.netlify.app', 'http://localhost:3000', 'http://localhost:8081'],  // Reemplaza con la URL de tu frontend
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
     optionsSuccessStatus: 204,
-  };
-  
+  };    
+
   app.use(cors(corsOptions));
 app.use(express.json());
 
@@ -27,7 +27,7 @@ app.get('/test-db', async (req, res) => {
     } catch (error) {
         res.status(500).json({ error: 'Error al conectar con la base de datos' });
     }
-});
+});     
 routerApi(app);
 
 app.listen(port,()=>{

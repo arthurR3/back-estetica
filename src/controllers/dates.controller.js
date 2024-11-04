@@ -389,8 +389,8 @@ const update = async (req, res) => {
     try {
         const { id } = req.params;
         const body = req.body;
-        const response = await service.updateDate(id, body);
-        res.json(response);
+        await service.updateDate(id, body);
+        return res.json({success: true});
     } catch (error) {
         res.status(500).send({ success: false, message: error.message });
     }
