@@ -23,6 +23,7 @@ class UsersService {
         });
         return res;
     }
+    
 
     async findByCode(code) {
         const res = await User.findOne({

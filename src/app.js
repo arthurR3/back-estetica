@@ -31,5 +31,5 @@ app.get('/test-db', async (req, res) => {
 routerApi(app);
 
 app.listen(port,()=>{
-   // console.log("Port ==> ", port);
+    console.log("Port ==> ", port);
 });

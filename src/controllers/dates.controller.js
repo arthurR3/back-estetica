@@ -6,6 +6,8 @@ import DatesService from "../services/dates.service.js";
 import UsersService from "../services/users.service.js"
 import DateDetailService from "../services/datesDetail.service.js";
 import MailService from "../services/notification.service.js";
+import Stripe from "stripe";
+const stripe = new Stripe(process.env.STRIPE_ACCESS)
 const mailService = new MailService()
 const service = new DatesService();
 const usersService = new UsersService();
@@ -237,15 +239,58 @@ const createSinPago = async (req, res) => {
     }
 }
 
-
-const createAppointment = async (req, res) => {
+const createSession = async (req, res) => {
+    const { customer, total, data } = req.body;
     try {
-        const { customer, total, data } = req.body;
-        let userId;
-        let userEmail;
-        let tempPassword;
-        let user = await usersService.findByEmail(customer.email);
-        const code = await generateUniqueCode();
+        const dataComplete = {
+             customer,
+             reserva: {date: data.date, time: data.time},
+             servicio: data.service.map(service =>({
+                id: service.id,
+                name: service.name,
+                price: service.price,
+                duration: service.duration,
+             })),
+             total
+        }
+
+        const line_items = data.service.map(service =>({
+            price_data :{
+                currency: 'mxn',
+                product_data : {
+                    name : service.name
+                },
+                unit_amount: (Math.round(service.price * 100) / 2)
+            },
+        quantity: 1 
+    }))
+    const session = await stripe.checkout.sessions.create({
+        line_items: line_items,
+        mode: 'payment',
+        success_url: `http://localhost:3000/success?session_id={CHECKOUT_SESSION_ID}&userID=${customer.email}`,
+        cancel_url: `http://localhost:3000/cancel?session_id={CHECKOUT_SESSION_ID}`,
+        customer_email: customer.email,
+        metadata: {data : JSON.stringify(dataComplete)}
+    })
+    return res.json({url:session.url})
+    } catch (error) {
+        console.log(error.message)
+        return res.status(500).json({message: error.message})
+    }
+}
+
+const receiveComplete =  async (req, res) =>{
+    const {sessionId, userID} = req.body;
+    let userId;
+    let userEmail;
+    let tempPassword;
+    try {
+        const session = await stripe.checkout.sessions.retrieve(sessionId)
+        const data = JSON.parse(session.metadata.data)
+        console.log(data)
+
+        let user = await usersService.findByEmail(userID);
+        const code = await generateUniqueCode()
         if (!user) {
             // Crear un nuevo usuario si no existe
             tempPassword = generateRandomPassword(12); // Generar una contraseña temporal
@@ -253,12 +298,12 @@ const createAppointment = async (req, res) => {
             const newUser = await usersService.create({
                 id_role: 1,
                 id_frequency: 1,
-                name: customer.nombre,
-                last_name1: customer.apellido,
-                last_name2: customer.apellidoMat,
-                email: customer.email,
+                name: data.customer.nombre,
+                last_name1: data.customer.apellido,
+                last_name2: data.customer.apellidoMat,
+                email: data.customer.email,
                 password: hashPassword,
-                phone: customer.telefono,
+                phone: data.customer.telefono,
                 code: code
             });
             userId = newUser.dataValues.id;
@@ -269,21 +314,21 @@ const createAppointment = async (req, res) => {
             userEmail = user.email;
         }
 
-        // Crear la cita
         const newDate = {
             id_user: userId,
             id_payment: 5,
-            date: data.date,
-            time: data.time,
-            paid: 0,
-            remaining: total,
+            date: data.reserva.date,
+            time: data.reserva.time,
+            paid:( data.total/2).toFixed(2),
+            remaining: (data.total/2).toFixed(2),
             payment_status: 'Pendiente',
-            date_status: 'Agendada'
+            date_status: 'P_Confirmar'
         };
+
         const response = await service.create(newDate);
 
         // Obtener los servicios seleccionados
-        const detailsPromises = data.service.map(async (serviceInfo) => {
+        const detailsPromises = data.servicio.map(async (serviceInfo) => {
             await datesDetail.create({
                 id_date: response.id,
                 id_service: serviceInfo.id,
@@ -293,116 +338,36 @@ const createAppointment = async (req, res) => {
         });
 
         await Promise.all(detailsPromises);
+        // Preparar los datos para el correo
+        const citaData = {
+            idCita: response.id,
+            idUser: userId,
+            nombre: `${user.name} ${user.last_name1}`, // Asumiendo que 'customer' contiene el nombre
+            servicio: await Promise.all(data.servicio.map(async (serviceInfo) => {
+                return {
+                    name: serviceInfo.name,
+                    price: serviceInfo.price
+                };
+            })),
+            date: data.reserva.date,
+            time: data.reserva.time,
+            payment_status: 'Pendiente'
+        };
 
-        // Configurar MercadoPago y crear preferencia de pago
-        mercadopago.configure({
-            access_token: process.env.MERCADOPAGO_ACCESS_TOKEN
-        });
-
-        const appointment = await mercadopago.preferences.create({
-            items: [{
-                title: 'Total de servicios',
-                unit_price: total,
-                quantity: 1,
-                currency_id: "MXN",
-            }], 
-            notification_url: `https://back-estetica-production-710f.up.railway.app/api/v1/dates/reciveWebHook/${userId}`,
-            back_urls: {
-                success: `https://estetica-principal.netlify.app/user-info/citas-agendadas`,
-                failure: `${process.env.MERCADOPAGO_URL}/appointments`,
-                pending: `${process.env.MERCADOPAGO_URL}/appointments/pending`
-            },
-        });
-       // console.log("Payment Preference Created");
-
-        res.json({ success: true, data: appointment });
+        // Enviar correo basado en si el usuario es nuevo o ya está registrado
+        if (tempPassword) {
+            // Nuevo usuario
+            await mailService.sendRegistrationEmail(userEmail, tempPassword, citaData);
+        } else {
+            // Usuario ya registrado
+            await mailService.sendConfirmation(userEmail, citaData);
+        }
+ 
+        return res.json({success: true});
     } catch (error) {
-       // console.error('Error al crear la cita:', error);
-        res.status(500).send({ success: false, message: error.message });
+        return res.status(500).json({ message: 'Error al completar la cita', error: error });
     }
-};
-
-const AppointmentWebhook = async (req, res) => {
-    const { body: appointment, params: { id: userId } } = req;
-    try {
-        const user = await usersService.findOne(userId);
-        const appointments = await service.findOneDate(userId); // Cambiado de 'payments' a 'appointments'
-       // console.log("Appointment Data:", appointments);
-
-        if (appointment.type === "payment") {
-            const appointmentPromises = appointments.map(async (appointment) => {
-                // Actualiza el estado de pago a "pagado"
-                await service.update(appointment.id, {
-                    paid: appointment.remaining / 2,
-                    remaining: appointment.remaining / 2,
-                    payment_status: 'pendiente',
-                    date_status: 'P_Confirmar'
-                });
-            });
-
-            await Promise.all(appointmentPromises);
-        }
-
-        res.json({ success: true, message: 'Appointment created successfully' });
-    } catch (error) {
-        console.error('Error al procesar notificación de Mercado Pago:', error.message);
-        res.sendStatus(500); // Responder con un código 500 en caso de error
-    }
-};
-const confirmAppointment = async (req, res) => {
-    const { appointmentId, userID } = req.body;
-
-    try {
-        // Obtener la cita agendada del usuario
-        const appointments = await service.findById(appointmentId);
-
-        // Depurar: Verificar qué datos se reciben
-
-        // Verificar que appointments es un array y contiene al menos un elemento
-        if (!Array.isArray(appointments) || appointments.length === 0) {
-            return res.status(404).json({ message: 'Cita no encontrada.' });
-        }
-
-        // Acceder a la primera cita en el array
-        const appointment = appointments[0];
-       // console.log('Primera cita en el array:', appointment);
-
-        // Verificar que appointment tiene dataValues
-        if (!appointment || !appointment.dataValues) {
-           // console.log('La cita no contiene dataValues.');
-            return res.status(500).json({ message: 'Error al acceder a los datos de la cita.' });
-        }
-
-        // Acceder a los datos reales de la cita
-        const appointmentData = appointment.dataValues;
-       // console.log('Datos de la cita:', appointmentData);
-
-        // Verificar que la cita esté en estado "Agendada"
-        if (appointmentData.date_status !== 'P_Confirmar') {
-      //      console.log('La cita no está en estado "Agendada".');
-            return res.status(400).json({ message: 'La cita no está en estado "Agendada".' });
-        }
-
-        // Confirmar la cita
-        const data = { date_status: 'Confirmada' };
-        await service.update(appointmentId, data);
-
-        // Obtener el correo del usuario
-        const user = await usersService.findOne(userID);
-       // console.log('Correo del usuario:', user);
-
-        // Opcional: Enviar correo de confirmación si es necesario
-        // await mailService.sendConfirmation(user.email, appointmentData);
-
-        // Responder con éxito
-        return res.json({ message: 'Cita confirmada exitosamente.' });
-
-    } catch (error) {
-        // Manejar errores
-        console.error('Error al confirmar la cita:', error);
-        return res.status(500).json({ message: 'Error al confirmar la cita', error: error });
-    }
-};
+}
 
 
 const cancelation = async (req, res) => {
@@ -451,5 +416,5 @@ const _delete = async (req, res) => {
 }
 
 export {
-    create, createSinPago, getTotalAttendedSales, createAppointment, confirmAppointment, AppointmentWebhook, get, getByTime, getById, getCounts,getByDate, getByUserId, update, _delete
+    create, createSinPago, createSession, receiveComplete,  getTotalAttendedSales, get, getByTime, getById, getCounts,getByDate, getByUserId, update, _delete
 };

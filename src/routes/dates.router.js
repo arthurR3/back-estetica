@@ -1,6 +1,6 @@
 import { Router } from 'express';
 const router = Router(); 
-import { get, getById, getByUserId, getCounts, getByDate,create, update, _delete, createAppointment, AppointmentWebhook, getByTime, createSinPago, confirmAppointment, getTotalAttendedSales } from '../controllers/dates.controller.js';
+import { get, getById, getByUserId, getCounts, getByDate,create, update, _delete, getByTime, createSinPago, getTotalAttendedSales, createSession, receiveComplete } from '../controllers/dates.controller.js';
 
 router
     .get('/', get )
@@ -12,9 +12,11 @@ router
     .get('/total/total-attended', getTotalAttendedSales)
     .post('/', create )
     .post('/create-sinpay', createSinPago)
-    .post('/createAppointment', createAppointment)
-    .post('/confirmation', confirmAppointment)
-    .post('/reciveWebHook/:id', AppointmentWebhook)
+    .post('/create-order', createSession)
+    .post('/success', receiveComplete)
+   /*  .post('/createAppointment', createAppointment) */
+    /* .post('/confirmation', confirmAppointment) */
+    /* .post('/reciveWebHook/:id', AppointmentWebhook) */
     .put('/:id', update )
     .delete('/:id', _delete );
 
