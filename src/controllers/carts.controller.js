@@ -29,10 +29,10 @@ const getById = async (req, res) => {
             const product = await ProductService.findOne(detail.id_product);
             products.push({
                 id: detail.id_product,
-                name: product.name, // Asumiendo que el nombre del producto está en la propiedad 'name'
-                description: product.description, // Asumiendo que la descripción del producto está en la propiedad 'description'
+                name: product.name, 
+                description: product.description,
                 image : product.image, 
-                quantify: detail.amount,
+                quantity: detail.amount,
                 price: detail.unit_price,
                 amout: product.amount,
             });
@@ -40,6 +40,37 @@ const getById = async (req, res) => {
         res.json({success: true, data: products});
     } catch (error) {
         res.status(500).send({ success: false, message: error.message });
+    }
+}
+
+const addProduct = async (req, res) => {
+    try {
+        const {id_user, id, price, quantity} = req.body;
+        //Verifica si el carrito ya existe
+        let cart = await cartService.findOne(id_user)
+        if (!cart) {
+            // Si no existe un carrito activo, crea uno nuevo
+             cart = await cartService.create({
+                id_user: id_user,
+                status: 'active',
+                date: new Date()
+            });
+        }
+        const existingItem = await CartDetailService.findOneProduct(cart.dataValues.id, id)
+        if(existingItem){
+            existingItem.dataValues.amount += quantity
+        }else{
+            await CartDetailService.create({
+                id_cart: cart.dataValues.id,
+                id_product: id,
+                amount: quantity,
+                unit_price: price 
+            });
+        }
+
+        res.status(201).json({message: 'Product added to cart successfully'})
+    } catch (error) {
+        res.status(500).json({message:'Error adding item to cart', error})
     }
 }
 
@@ -55,9 +86,24 @@ const create = async (req, res) => {
 
 const update = async (req, res) => {
     try {
-        const userId = req.params.id;
+        const {id_user, id_product} = req.params;
+        const{ quantity } = req.body
+        const cart = await cartService.findOne(id_user)
+        if(cart){
+            const cartItem = await CartDetailService.findOneProduct(cart.dataValues.id, id_product)
+            if(cartItem){
+                cartItem.amount = quantity
+                await cartItem.save()
+                res.status(200).json({message: 'Product quantity updated successfully'})
+            }else{
+                res.status(404).json({message: 'Product not found in cart'})
+            }
+        }
+
+       /*  const userId = req.params.id;
         const products = req.body;
         let idCart;
+        console.log(products)
         //console.log(products.state)
         let cart = await cartService.findOne(userId);
         if (!cart) {
@@ -71,12 +117,10 @@ const update = async (req, res) => {
         }
         idCart = cart.dataValues.id;
         // Recorrer los productos recibidos desde el frontend
-        for (const product of products.state) {
+        for (const product of products) {
             const { id, quantify, price, amount } = product;
             // Verifica si el producto ya esta en el carrito
-            /* if (quantify > amount) {
-                return res.status(400).json({ success: false, message: 'La cantidad solicitada supera el stock disponible' });
-            } */
+           
             const cartDetail = await CartDetailService.findOneProduct(idCart, id);
             if (cartDetail != null) {
                 // El producto ya está en el carrito, actualizar la cantidad y el precio unitario
@@ -93,29 +137,30 @@ const update = async (req, res) => {
                 });
             }
             
-        }
-        res.status(200).json({ success: true });
+        } */
     } catch (error) {
         res.status(500).send({ success: false, message: error.message });
     }
 };
 
-const updateCartItems = async (req, res) => {
-    const {customerId, productId} = req.params
-    const { cantidad } = req.body;
-try {
-    const cart = await cartService.findOne(customerId);
-    if (!cart) {
-        return res.status(404).json({ success: false, message: 'Carrito no encontrado' });
+const removeProduct = async(req, res) =>{
+    try {
+        const {productId, id_user }= req.body
+        const cart = await cartService.findOne(id_user)
+        if(cart){
+           const items=  await CartDetailService.findOneProduct(cart.dataValues.id, productId)
+            await items.destroy({where: {id_cart: cart.dataValues.id, id_product: productId}})
+            console.log('successfully deleted')
+            res.status(200).json({message: 'Product deleted from cart successfully'})
+        }else{
+            res.status(404).json({message: 'Cart not found'})
+        }
+    } catch (error) {
+        console.log('Error deleting product from cart', error)
+        res.status(500).send({ success: false, message: error.message });
     }
-
-    const productIndex = cart.items.findIndex(item => item.id === productId);
-
-
-} catch (error) {
-    
 }
-}
+
 
 // NO LO NECESITO
 
@@ -140,5 +185,5 @@ const _delete = async (req, res) => {
 }
 
 export {
-    create, get, getById, update, _delete
+    create, addProduct, removeProduct, get, getById, update, _delete
 };

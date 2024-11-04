@@ -96,6 +96,20 @@ const getById = async (req, res) => {
     }
 }
 
+const getVerficateEmail = async (req, res) => {
+    try {
+        const { email } = req.body;
+        const user = await service.findByEmail(email);
+        if (!user) {
+            return res.json({ success: false, message: 'El correo no está registrado' });
+        }
+        return res.status(200).json({ success: true, message: 'El correo ya está registrado' });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: 'Ocurrió un error en el servidor' });
+    }
+};
+
+
 const getByCode = async (req, res) => {
     try {
         const { code } = req.params;
@@ -143,7 +157,7 @@ const sendConfirmationEmail = async (req, res) => {
             // Enviar correo de confirmación con el código de verificación
             await sendEmail(email, resetCode);
         }
-        res.json({ success: true, message: 'Se ha enviado el correo de confirmación de correo' });
+        res.json({ success: true, message: 'Se ha enviado el código de verificación al correo' });
     } catch (error) {
         res.status(500).send({ success: false, message: error.message });
     }
@@ -153,7 +167,7 @@ const sendCodeEmail = async (req, res) => {
     try {
         const { email } = req.body;
         const user = await service.findByEmail(email);
-       // console.log('User', user)
+        // console.log('User', user)
         if (!user) {
             return res.status(402).json({ success: false, message: 'El correo no está registrado' });
         }
@@ -167,7 +181,7 @@ const sendCodeEmail = async (req, res) => {
         if (existingCode) {
             if (existingCode.expirationTime > new Date()) {
                 // El código es existente y aún no ha expirado
-               // console.log('Código existente válido. Código:', existingCode.resetCode);
+                // console.log('Código existente válido. Código:', existingCode.resetCode);
                 await sendEmail(email, existingCode.resetCode);
                 expirationTime = existingCode.expirationTime; // Asignar expirationTime aquí
             } else {
@@ -185,7 +199,7 @@ const sendCodeEmail = async (req, res) => {
         } else {
             // No existe un código para este correo electrónico, generar uno nuevo y crear un registro en la base de datos
             const resetCode = generateCode();
-          //  console.log('No existe ningún código existente. Generando nuevo código:', resetCode);
+            //  console.log('No existe ningún código existente. Generando nuevo código:', resetCode);
             expirationTime = new Date(Date.now() + 3 * 60 * 1000); // Asignar expirationTime aquí
 
             await codeService.create({ userEmail: user.email, resetCode, expirationTime });
@@ -259,7 +273,6 @@ const login = async (req, res) => {
     try {
         const { email, password } = req.body;
         const response = await service.findByEmail(email);
-        const addressG = await addressService.findOne(response.id)
         if (!response) {
             return res.status(401).json({ success: false, message: 'Correo electronico incorrecto!' })
         }
@@ -271,7 +284,7 @@ const login = async (req, res) => {
         const isPassword = await bcrypt.compare(password, response.password)
         if (!isPassword) {
             response.numIntentos = (response.numIntentos || 0) + 1;
-         //   console.log('No. ', response.numIntentos)
+            //   console.log('No. ', response.numIntentos)
             if (response.numIntentos === 3) {
                 blockedUsers[response.id] = true;
                 setTimeout(() => {
@@ -285,9 +298,14 @@ const login = async (req, res) => {
             return res.status(401).json({ success: false, message: 'Contraseña incorrecta' })
         }
 
+        if (response.id_role !== 1) {
+            return res.status(403).json({ success: false, message: 'Por favor, inicie sesión a través del portal de administración.' });
+        }
+
         const usuario = {
             idUser: response.id,
             nombre: response.name,
+            email:email,
             lastName: response.last_name1,
             lastName2: response.last_name2,
             rol: response.id_role,
@@ -307,49 +325,47 @@ const loginAdmin = async (req, res) => {
         const { email, password } = req.body;
         const response = await service.findByEmail(email);
         if (!response) {
-            return res.status(401).json({ success: false, message: 'Correo electronico incorrecto!' })
+            return res.status(401).json({ success: false, message: 'Correo electrónico incorrecto!' });
         }
 
-        if (blockedUsers[response.id]) {
-            await logService.logLoginBlock(req.ip, email)
-            return res.status(403).json({ success: false, message: 'Excediste los limites de intento, espere un 1min para volver a intentarlo.' })
+        // Verificar que el rol sea de administrador
+        if (response.id_role !== 2) { // Suponiendo que 2 es el rol de administrador
+            return res.status(403).json({ success: false, message: 'Acceso denegado. No tienes permisos de administrador.' });
         }
-        if(response.id_role === 2){
-            const isPassword = await bcrypt.compare(password, response.password)
-            if (!isPassword) {
-                response.numIntentos = (response.numIntentos || 0) + 1;
-             //   console.log('No. ', response.numIntentos)
-                if (response.numIntentos === 3) {
-                    blockedUsers[response.id] = true;
-                    setTimeout(() => {
-                        delete blockedUsers[response.id]
-                        response.numIntentos = 0;
-                        service.update(response.id, { numIntentos: response.numIntentos })
-                    }, 60000)
-                } else {
-                    await service.update(response.id, { numIntentos: response.numIntentos })
-                }
-                return res.status(401).json({ success: false, message: 'Contraseña incorrecta' })
+
+        const isPassword = await bcrypt.compare(password, response.password);
+        if (!isPassword) {
+            response.numIntentos = (response.numIntentos || 0) + 1;
+            if (response.numIntentos === 3) {
+                blockedUsers[response.id] = true;
+                setTimeout(() => {
+                    delete blockedUsers[response.id];
+                    response.numIntentos = 0;
+                    service.update(response.id, { numIntentos: response.numIntentos });
+                }, 60000);
+            } else {
+                await service.update(response.id, { numIntentos: response.numIntentos });
             }
-    
-            const usuario = {
-                idUser: response.id,
-                nombre: response.name,
-                lastName: response.last_name1,
-                lastName2: response.last_name2,
-                rol: response.id_role,
-            }
-            const token = jwt.sign({ user: usuario }, secretKey, { expiresIn: '2h' })
-            await logService.logLogin(req.ip, email)
-            res.json({ success: true, data: token })
-        }else{
-            return res.status(403).json({ success: false, message: 'Usuario no tiene permisos de administrador' })
+            return res.status(401).json({ success: false, message: 'Contraseña incorrecta' });
         }
-        
+
+        const admin = {
+            idUser: response.id,
+            nombre: response.name,
+            lastName: response.last_name1,
+            lastName2: response.last_name2,
+            rol: response.id_role,
+            code: response.code,
+        };
+
+        const token = jwt.sign({ user: admin }, secretKey, { expiresIn: '2h' });
+        await logService.logLogin(req.ip, email);
+        res.json({ success: true, data: token });
     } catch (error) {
-        res.status(500).send({ success: false, message: error.message })
+        res.status(500).send({ success: false, message: error.message });
     }
-}
+};
+
 
 
 const updatePassword2 = async (req, res) => {
@@ -411,8 +427,8 @@ const create = async (req, res) => {
             password: hashPassword,
             phone: user.phone,
             birthday: user.birthday,
-            question: user.question,
-            answers: user.answers,
+            ...(user.question && { question: user.question }),  
+            ...(user.answers && { answers: user.answers }),
             code: code,
         };
         await service.create(userData);
@@ -463,5 +479,5 @@ const _delete = async (req, res) => {
 }
 
 export {
-    create, get, getById, getByCode, update, _delete, login, loginAdmin, sendConfirmationEmail, sendCodeEmail, verificationEmail, updatePassword, updatePassword2
+    create, get, getById, getVerficateEmail, getByCode, update, _delete, login, loginAdmin, sendConfirmationEmail, sendCodeEmail, verificationEmail, updatePassword, updatePassword2
 };

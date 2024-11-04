@@ -174,7 +174,7 @@ const createInMercadoPago = async (req, res) => {
         const result = await mercadopago.preferences.create({
             items: items,
             // URL a la que Mercado Pago enviará notificaciones sobre el pago (API)
-            notification_url: `https://25a1-201-97-136-222.ngrok-free.app/api/v1/sales/webhook/${userID}`,
+            notification_url: `http://localhost:5000/api/v1/sales/webhook/${userID}`,
             // URLs a las que redirigirá al usuario luego de completar el pago (éxito, falla, pendiente)
             back_urls: {
                 success: `http://localhost:3000/shop-cart/details`,
@@ -323,6 +323,7 @@ const receiveWebhook = async (req, res) => {
 
 const createSession = async (req, res) => {
     const response = req.body;
+    console.log(response)
     const total = response.total;
     const userID = response.UserId;
     try {
@@ -334,16 +335,30 @@ const createSession = async (req, res) => {
                 },
                 unit_amount: producto.unit_amount,
             },
-            quantity: producto.quantity
+            quantity: producto.quantity,
+            
         }))
         const session  = await stripe.checkout.sessions.create({
-            line_items:line_items,
+            line_items:[
+                ...line_items,
+                {
+                    price_data: {
+                        currency: 'mxn', 
+                        product_data: {
+                            name: 'Costo de envío',
+                        },
+                        unit_amount: Math.round(response.costoEnvio * 100), 
+                    },
+                    quantity: 1, // siempre será 1 ya que es un solo envío
+                },
+            ],
             mode: 'payment',
-            success_url: `https://estetica-principal.netlify.app/shop-cart/success?session_id={CHECKOUT_SESSION_ID}&userID=${userID}`,
-            cancel_url: 'https://estetica-principal.netlify.app/shop-cart',
+            success_url: `http://localhost:3000/shopmarket/success?session_id={CHECKOUT_SESSION_ID}&userID=${userID}`,
+            cancel_url: 'http://localhost:3000/carrito-compras',
             client_reference_id: userID,
             metadata:{
                 productos: JSON.stringify(response.productos),
+                direccion: JSON.stringify(response.direccionEnvio)
             }
         })
     
@@ -355,17 +370,15 @@ const createSession = async (req, res) => {
 
 const receiveComplete = async (req, res) =>{
     const {sessionId, userID } = req.body;
-   // console.log(sessionId)
     try {
         const session = await stripe.checkout.sessions.retrieve(sessionId);
-        const address = await addressesService.findOne(userID);
-
+        const direccion= session.metadata.direccion
         let paymentId = await paymentService.findByName('visa');
         const IdMethPay = paymentId.dataValues.id;
         const newSale = await saleService.create({
             id_user: userID,
             id_payment: IdMethPay,
-            id_address: address.id,
+            id_address: direccion,
             shipping_status: "En proceso",
             total: session.amount_total / 100,
             date: new Date()
@@ -383,7 +396,7 @@ const receiveComplete = async (req, res) =>{
         const user = await userService.findOne(userID);
         //console.log(user.email, detailSales) // Asumiendo que tienes un servicio para obtener el correo del usuario
         await mailService.confirmationCompra(user.email, detailSales);
-        return res.json({ message: 'Compra completada exitosamente' });
+        return res.status(200).json({ message: 'Compra completada exitosamente' });
 
     } catch (error) {
         return res.status(500).json({ message: 'Error al completar la compra', error: error });

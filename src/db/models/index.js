@@ -18,6 +18,9 @@ import { CartDetail, CartDetailSchema } from './cartsDetail.model.js';
 import { Log, LogSchema } from './logs.model.js';
 import { DateDetail, DateDetailSchema } from './datesDetail.model.js';
 import { Promotion, PromotionSchema } from './promotion.model.js';
+import { HGRALSchema, HorarioG } from './horarioGnral.model.js';
+import { HEXPSchema, HorarioEXP } from './horarioException.model.js';
+
 import { SalesView, SalesViewSchema } from './sales_view.model.js';
 
 function setupModels(sequelize) {
@@ -41,6 +44,9 @@ function setupModels(sequelize) {
     ResetCode.init(CodeSchema, ResetCode.config(sequelize));
     Log.init(LogSchema, Log.config(sequelize));
     Promotion.init(PromotionSchema, Promotion.config(sequelize));
+    HorarioG.init(HGRALSchema, HorarioG.config(sequelize));
+    HorarioEXP.init(HEXPSchema, HorarioEXP.config(sequelize));
+
     SalesView.init(SalesViewSchema, SalesView.config(sequelize));
 
     // Establecer relaciones
