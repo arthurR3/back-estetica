@@ -6,12 +6,20 @@ import dotenv from 'dotenv';
 const app = express();
 dotenv.config();
 const port = process.env.PORT || 3000;
+/* 
+origin: ['https://estetica-principal.netlify.app', 'https://estetica-emma.netlify.app', 'http://localhost:3000', 'http://localhost:8081'],
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+    optionsSuccessStatus: 204,
+    cacheControl: true, */
 
 const corsOptions = {
-    origin: '*',  // Reemplaza con la URL de tu frontend
+    origin: ['https://estetica-principal.netlify.app', 'https://estetica-emma.netlify.app', 'http://localhost:3000', 'http://localhost:8081'],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
     optionsSuccessStatus: 204,
+    cacheControl: true,
   };    
 
   app.use(cors(corsOptions));
