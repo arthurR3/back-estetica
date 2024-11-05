@@ -267,8 +267,8 @@ const createSession = async (req, res) => {
     const session = await stripe.checkout.sessions.create({
         line_items: line_items,
         mode: 'payment',
-        success_url: `http://localhost:3000/success?session_id={CHECKOUT_SESSION_ID}&userID=${customer.email}`,
-        cancel_url: `http://localhost:3000/cancel?session_id={CHECKOUT_SESSION_ID}`,
+        success_url: `https://estetica-emma.netlify.app/success?session_id={CHECKOUT_SESSION_ID}&userID=${customer.email}`,
+        cancel_url: `https://estetica-emma.netlify.app/cancel?session_id={CHECKOUT_SESSION_ID}`,
         customer_email: customer.email,
         metadata: {data : JSON.stringify(dataComplete)}
     })
