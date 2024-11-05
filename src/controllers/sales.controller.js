@@ -174,10 +174,10 @@ const createInMercadoPago = async (req, res) => {
         const result = await mercadopago.preferences.create({
             items: items,
             // URL a la que Mercado Pago enviará notificaciones sobre el pago (API)
-            notification_url: `http://localhost:5000/api/v1/sales/webhook/${userID}`,
+            notification_url: `https://back-estetica-production-e475.up.railway.app/api/v1/sales/webhook/${userID}`,
             // URLs a las que redirigirá al usuario luego de completar el pago (éxito, falla, pendiente)
             back_urls: {
-                success: `http://localhost:3000/shop-cart/details`,
+                success: `https://estetica-emma.netlify.app/carrito-compras`,
                 failure: `${process.env.MERCADOPAGO_URL}/shop-cart`,
                 pending: `${process.env.MERCADOPAGO_URL}/pending`
             },
@@ -353,8 +353,8 @@ const createSession = async (req, res) => {
                 },
             ],
             mode: 'payment',
-            success_url: `http://localhost:3000/shopmarket/success?session_id={CHECKOUT_SESSION_ID}&userID=${userID}`,
-            cancel_url: 'http://localhost:3000/carrito-compras',
+            success_url: `https://estetica-emma.netlify.app/shopmarket/success?session_id={CHECKOUT_SESSION_ID}&userID=${userID}`,
+            cancel_url: 'https://estetica-emma.netlify.app/carrito-compras',
             client_reference_id: userID,
             metadata:{
                 productos: JSON.stringify(response.productos),
