@@ -18,9 +18,16 @@ class SubscriptionService {
             const subscriptions = await Subscription.findAll()
             const notificationPayload = JSON.stringify({ title, message })
             for (let subscription of subscriptions) {
-                // Primero parseamos el campo `keys` para convertirlo en un objeto
-                const keys = JSON.parse(subscription.keys);
+                let keys;
 
+                // Primero parseamos el campo `keys` para convertirlo en un objeto
+                if (typeof subscription.keys === 'string') {
+                    // Si es una cadena, haz un JSON.parse
+                    keys = JSON.parse(subscription.keys);
+                } else {
+                    // Si ya es un objeto, lo asignamos directamente
+                    keys = subscription.keys;
+                }
                 const pushSubscription = {
                     endpoint: subscription.endpoint,
                     keys: {
