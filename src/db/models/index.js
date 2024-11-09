@@ -20,7 +20,7 @@ import { DateDetail, DateDetailSchema } from './datesDetail.model.js';
 import { Promotion, PromotionSchema } from './promotion.model.js';
 import { HGRALSchema, HorarioG } from './horarioGnral.model.js';
 import { HEXPSchema, HorarioEXP } from './horarioException.model.js';
-
+import { SubscriptionSchema, Subscription } from './notification.model.js';
 import { SalesView, SalesViewSchema } from './sales_view.model.js';
 
 function setupModels(sequelize) {
@@ -46,7 +46,7 @@ function setupModels(sequelize) {
     Promotion.init(PromotionSchema, Promotion.config(sequelize));
     HorarioG.init(HGRALSchema, HorarioG.config(sequelize));
     HorarioEXP.init(HEXPSchema, HorarioEXP.config(sequelize));
-
+    Subscription.init(SubscriptionSchema, Subscription.config(sequelize))
     SalesView.init(SalesViewSchema, SalesView.config(sequelize));
 
     // Establecer relaciones

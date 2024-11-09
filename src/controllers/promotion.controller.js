@@ -1,7 +1,7 @@
 import PromotionService from '../services/promotion.service.js';
-
+import SubscriptionService from '../services/subscription.service.js';
 const promotionService = new PromotionService();
-
+const subscriptions = new SubscriptionService()
 const getPromotions = async (req, res) => {
     try {
         const promotions = await promotionService.findAll();
@@ -56,6 +56,11 @@ const createPromotion = async (req, res) => {
         }
       //  console.log(data)
         const promotion = await promotionService.create(data);
+        if(promotion.status === true){
+            const title = 'Nueva Promocion'
+            const message = `Estetica Emma tiene un nuevo Descuento, ${promotion.title} y se beneficiario del ${promotion.discount}%. Visitanos!`
+            await subscriptions.sendNotification(title, message)
+        }
       //  console.log(promotion)
         res.status(201).json(promotion);
     } catch (error) {
@@ -68,6 +73,11 @@ const updatePromotion = async (req, res) => {
         const promotion = await promotionService.update(req.params.id, req.body);
         if (!promotion) {
             return res.status(404).json({ error: 'Promotion not found' });
+        }
+        if(promotion.status === true){
+            const title = 'Nueva Promocion'
+            const message = `Se ha modificado la promocion ${promotion.title} Ingresa ahora y cuenta con el ${promotion.discount}%. Visitanos!`
+            await subscriptions.sendNotification(title, message)
         }
         res.status(200).json(promotion);
     } catch (error) {
