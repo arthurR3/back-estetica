@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import routerApi from './routes/index.js';
 import dotenv from 'dotenv';
+//import webPush from 'web-push'
+//const vapidKeys = webPush.generateVAPIDKeys();
 
 const app = express();
 dotenv.config();
@@ -33,4 +35,6 @@ routerApi(app);
 
 app.listen(port,()=>{
     console.log("Port ==> ", port);
+    //console.log('vapidKEY',vapidKeys);
+
 });
