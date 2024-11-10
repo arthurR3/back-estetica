@@ -58,7 +58,7 @@ const createPromotion = async (req, res) => {
         const promotion = await promotionService.create(data);
         if(promotion.status === true){
             const title = 'Nueva Promocion'
-            const message = `Estetica Emma tiene un nuevo Descuento, ${promotion.title} y se beneficiario del ${promotion.discount}%. Visitanos!`
+            const message = `Estetica Emma tiene un nuevo Descuento, ${promotion.title}, ingresa y se beneficiario del ${promotion.discount}%. Visitanos!`
             await subscriptions.sendNotification(title, message)
         }
       //  console.log(promotion)
