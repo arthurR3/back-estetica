@@ -116,6 +116,12 @@ const UserSchema = {
         type: DataTypes.BOOLEAN,
         defaultValue: true,
         field: 'Estatus'
+    },
+    notification:{
+        allowNull: false,
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        field: 'Notificaciones'
     }
 }
 

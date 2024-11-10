@@ -8,6 +8,27 @@ class SubscriptionService {
         return res;
     }
 
+    async findOne(endPoint) {
+        const res = await Subscription.findOne({
+            where: {
+                endpoint: endPoint
+            }
+        })
+        return res;
+    }
+    async findById(id){
+        const res = await Subscription.findByPk(id)
+        return res;
+    }
+    async findByUser(idUser){
+        const res = await Subscription.findAll({
+            where: {
+                id_user: idUser
+            }
+        })
+        return res;
+    }
+
     async findAll() {
         const res = await Subscription.findAll()
         return res;
@@ -55,7 +76,37 @@ class SubscriptionService {
             console.log(error)
             return { status: 500, message: 'Error al Enviar las notificaciones' }
         }
+
+        
+    }
+
+    async update(id, data) {
+        const model = await this.findById(id);
+        const res = await model.update(data);
+        return res;
+    }
+
+    async updateUserToNull(idUser) {
+        // Encontrar todas las suscripciones del usuario
+        const subscriptions = await this.findByUser(idUser);
+
+        if (subscriptions.length > 0) {
+            // Para cada suscripción, actualizamos `id_user` a null
+            const updates = subscriptions.map(subscription =>
+                subscription.update({ id_user: null })
+            );
+
+            // Ejecutar todas las actualizaciones en paralelo
+            await Promise.all(updates);
+            return { message: 'Las suscripciones se actualizaron correctamente' };
+        } else {
+            return { message: 'No se encontraron suscripciones para el usuario' };
+        }
+    }
+
+    async delete(idUser) {
+        const res = await Subscription.destroy({ where: { id_user: idUser } });
+        return res;
     }
 }
-
 export default SubscriptionService;

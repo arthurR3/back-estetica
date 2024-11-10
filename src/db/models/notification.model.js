@@ -1,3 +1,4 @@
+import { all } from "axios";
 import { Model, DataTypes } from "sequelize";
 
 const NOTIFICATION_TABLE = 'subscription'
@@ -36,6 +37,11 @@ const SubscriptionSchema = {
         allowNull: false,
         field:'keys'
       },
+      id_user:{ //llave foranea
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        field:'id_usuario'
+      }
 }
 
 export {Subscription, SubscriptionSchema };
