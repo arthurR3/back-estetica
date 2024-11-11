@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import routerApi from './routes/index.js';
 import dotenv from 'dotenv';
+import { jobsDates } from './jobs/jobsNotification.js';
 //import webPush from 'web-push'
 //const vapidKeys = webPush.generateVAPIDKeys();
 
@@ -32,7 +33,7 @@ app.get('/test-db', async (req, res) => {
     }
 });     
 routerApi(app);
-
+jobsDates()
 app.listen(port,()=>{
     console.log("Port ==> ", port);
     //console.log('vapidKEY',vapidKeys);

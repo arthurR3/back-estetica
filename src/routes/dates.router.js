@@ -1,8 +1,9 @@
 import { Router } from 'express';
 const router = Router(); 
-import { get, getById, getByUserId, getCounts, getByDate,create, update, _delete, getByTime, createSinPago, getTotalAttendedSales, createSession, receiveComplete } from '../controllers/dates.controller.js';
+import { get, getById, getByUserId, getCounts, getByDate,create, update, _delete, getByTime, createSinPago, getTotalAttendedSales, createSession, receiveComplete, getDateNotification } from '../controllers/dates.controller.js';
 
 router
+    .get('/notifications-users', getDateNotification) // Ruta específica para notifications-users
     .get('/', get )
     .get('/:id', getById )
     .get('/user/:id', getByUserId )
