@@ -113,14 +113,14 @@ class SubscriptionService {
                 };
     
                 try {
-                    console.log("Enviando a:", pushSubscription.endpoint);
+                    //console.log("Enviando a:", pushSubscription.endpoint);
                     await webPush.sendNotification(pushSubscription, notificationPayload);
-                    console.log("Notificación enviada exitosamente a:", pushSubscription.endpoint);
+                    //console.log("Notificación enviada exitosamente a:", pushSubscription.endpoint);
                 } catch (error) {
                     if (error.statusCode === 410) {
-                        console.log(`La suscripción ha caducado o el cliente se dio de baja: ${pushSubscription.endpoint}`);
+                        //console.log(`La suscripción ha caducado o el cliente se dio de baja: ${pushSubscription.endpoint}`);
                         await Subscription.destroy({ where: { endpoint: subscription.endpoint } });
-                        console.log(`Suscripción eliminada: ${pushSubscription.endpoint}`);
+                        //console.log(`Suscripción eliminada: ${pushSubscription.endpoint}`);
                     } else {
                         console.error(`Error al enviar notificación a ${pushSubscription.endpoint}:`, error);
                     }
