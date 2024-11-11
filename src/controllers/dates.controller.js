@@ -59,7 +59,7 @@ const getByDate = async (req, res) => {
         const response = await service.findDate()
         return res.json(response.map(cita => cita.date))
     } catch (error) {
-        res.status(500).send({success: false, message: error.message})
+        res.status(500).send({ success: false, message: error.message })
     }
 }
 const getCounts = async (req, res) => {
@@ -67,7 +67,7 @@ const getCounts = async (req, res) => {
         const response = await service.countStatus()
         return res.json(response);
     } catch (error) {
-        res.status(500).send({success: false, message: error.message})
+        res.status(500).send({ success: false, message: error.message })
     }
 }
 
@@ -116,6 +116,27 @@ const getByUserId = async (req, res) => {
     }
 }
 
+const getDateNotification = async (req, res) => {
+    try {
+        const fechaActual = new Date();
+        const userDates = await service.findGetNotifications(fechaActual);
+        for (let cita of userDates) {
+            const user = cita.Usuario.dataValues;  // Accedes a los datos del usuario
+            const userId = cita.id_user;  // ID del usuario (según parece ser el id_user)
+            //console.log(userId, user.name)
+            const title = "Recordatorio de Cita";
+            const message = `Hola ${user.name}, tienes una cita pendiente. Por favor, no olvides tu cita. Revisa tu Perfil para mas información.`; // Mensaje de la notificación
+
+            await subscription.sendNotificationToUser(userId, title, message);
+        }
+        //return res.status(200).send({success: true, message : 'Enviados correctamente'});
+    } catch (error) {
+        // res.status(500).send({ success: false, message: error.message });
+        console.log('Hubo un error al ennviar las notificaciones jobs', error)
+    }
+
+}
+
 const create = async (req, res) => {
     const data = req.body;
     try {
@@ -150,7 +171,7 @@ const create = async (req, res) => {
         res.status(500).send({ success: false, message: error.message });
     }
 };
-  
+
 const createSinPago = async (req, res) => {
     const { customer, total, data } = req.body;
     let userId;
@@ -231,8 +252,8 @@ const createSinPago = async (req, res) => {
             // Usuario ya registrado
             const title = 'Cita Registrada'
             const message = `Estetica Emma recibió una cita para ti, no se te olvide de asistir. Revisa tu correo para mayor información.!`
-            
-            await subscription.sendNotificationToUser(userId,title, message)
+
+            await subscription.sendNotificationToUser(userId, title, message)
             //await mailService.sendConfirmation(userEmail, citaData);
         }
 
@@ -248,44 +269,44 @@ const createSession = async (req, res) => {
     const { customer, total, data } = req.body;
     try {
         const dataComplete = {
-             customer,
-             reserva: {date: data.date, time: data.time},
-             servicio: data.service.map(service =>({
+            customer,
+            reserva: { date: data.date, time: data.time },
+            servicio: data.service.map(service => ({
                 id: service.id,
                 name: service.name,
                 price: service.price,
                 duration: service.duration,
-             })),
-             total
+            })),
+            total
         }
 
-        const line_items = data.service.map(service =>({
-            price_data :{
+        const line_items = data.service.map(service => ({
+            price_data: {
                 currency: 'mxn',
-                product_data : {
-                    name : service.name
+                product_data: {
+                    name: service.name
                 },
                 unit_amount: (Math.round(service.price * 100) / 2)
             },
-        quantity: 1 
-    }))
-    const session = await stripe.checkout.sessions.create({
-        line_items: line_items,
-        mode: 'payment',
-        success_url: `https://estetica-emma.netlify.app/success?session_id={CHECKOUT_SESSION_ID}&userID=${customer.email}`,
-        cancel_url: `https://estetica-emma.netlify.app/cancel?session_id={CHECKOUT_SESSION_ID}`,
-        customer_email: customer.email,
-        metadata: {data : JSON.stringify(dataComplete)}
-    })
-    return res.json({url:session.url})
+            quantity: 1
+        }))
+        const session = await stripe.checkout.sessions.create({
+            line_items: line_items,
+            mode: 'payment',
+            success_url: `https://estetica-emma.netlify.app/success?session_id={CHECKOUT_SESSION_ID}&userID=${customer.email}`,
+            cancel_url: `https://estetica-emma.netlify.app/cancel?session_id={CHECKOUT_SESSION_ID}`,
+            customer_email: customer.email,
+            metadata: { data: JSON.stringify(dataComplete) }
+        })
+        return res.json({ url: session.url })
     } catch (error) {
         console.log(error.message)
-        return res.status(500).json({message: error.message})
+        return res.status(500).json({ message: error.message })
     }
 }
 
-const receiveComplete =  async (req, res) =>{
-    const {sessionId, userID} = req.body;
+const receiveComplete = async (req, res) => {
+    const { sessionId, userID } = req.body;
     let userId;
     let userEmail;
     let tempPassword;
@@ -324,8 +345,8 @@ const receiveComplete =  async (req, res) =>{
             id_payment: 5,
             date: data.reserva.date,
             time: data.reserva.time,
-            paid:( data.total/2).toFixed(2),
-            remaining: (data.total/2).toFixed(2),
+            paid: (data.total / 2).toFixed(2),
+            remaining: (data.total / 2).toFixed(2),
             payment_status: 'Pendiente',
             date_status: 'P_Confirmar'
         };
@@ -367,8 +388,8 @@ const receiveComplete =  async (req, res) =>{
             // Usuario ya registrado
             await mailService.sendConfirmation(userEmail, citaData);
         }
- 
-        return res.json({success: true});
+
+        return res.json({ success: true });
     } catch (error) {
         return res.status(500).json({ message: 'Error al completar la cita', error: error });
     }
@@ -376,17 +397,17 @@ const receiveComplete =  async (req, res) =>{
 
 
 const cancelation = async (req, res) => {
-    const {idCita, reason, id_user, email} = req.body;
+    const { idCita, reason, id_user, email } = req.body;
     const appointment = service.findOneUser(id_user);
     try {
-        if(!appointment){
-            return res.status(404).send({success: false, message: 'No existe una cita para ese usuario'})
+        if (!appointment) {
+            return res.status(404).send({ success: false, message: 'No existe una cita para ese usuario' })
         }
         const status = appointment.status = 'Cancelada'
-        await service.update(idCita,status)
+        await service.update(idCita, status)
         await sendEmail(email, 'Cita Cancelada', `Tu cita a sido cancelada. Motivo ${reason}`);
     } catch (error) {
-        
+
     }
 }
 
@@ -395,7 +416,7 @@ const update = async (req, res) => {
         const { id } = req.params;
         const body = req.body;
         await service.updateDate(id, body);
-        return res.json({success: true});
+        return res.json({ success: true });
     } catch (error) {
         res.status(500).send({ success: false, message: error.message });
     }
@@ -421,5 +442,5 @@ const _delete = async (req, res) => {
 }
 
 export {
-    create, createSinPago, createSession, receiveComplete,  getTotalAttendedSales, get, getByTime, getById, getCounts,getByDate, getByUserId, update, _delete
+    create, createSinPago, createSession, receiveComplete, getTotalAttendedSales, get, getByTime, getById, getCounts, getByDate, getByUserId, update, _delete, getDateNotification
 };

@@ -72,7 +72,7 @@ class DatesService {
 
     async findById(id) {
         const res = await Date.findAll({
-            where:{ id : id}
+            where: { id: id }
         })
         return res
     }
@@ -110,6 +110,32 @@ class DatesService {
         return res;
     }
 
+    async findGetNotifications(dateString) {
+        try {
+           
+            const citas = await Date.findAll({
+                where: {
+                    date: {
+                        [Sequelize.Op.gte]: dateString
+                    },
+                    date_status: { [Sequelize.Op.notIn]: ['Cancelada', 'Atendida'] }
+                },
+                attributes: ['id_user'], // No necesitamos los atributos de Cita, solo del usuario
+                include: [
+                    {
+                        model: User, // Modelo de usuario relacionado
+                        attributes: ['name', 'last_name1', 'last_name2', 'phone', 'email'], // Atributos que se quiere obtener del usuario
+                    },
+                ],
+                group: ['id_user']  // Aquí usamos el alias correcto
+            });
+
+            return citas;
+        } catch (error) {
+            console.error('Error al obtener las citas:', error);
+        }
+    }
+
     async getTotalAttendedSales() {
         try {
             const totalIncome = await Date.sum('paid', {
@@ -142,15 +168,15 @@ class DatesService {
         })
         return res;
     }
-    async findBookedSlots(date){
+    async findBookedSlots(date) {
         const res = await Date.findAll({
-            where:{
+            where: {
                 date: {
                     [Sequelize.Op.eq]: date
                 },
-                date_status: [ 'pendiente','Confirmada' , 'P_Confirmar']
+                date_status: ['pendiente', 'Confirmada', 'P_Confirmar']
             },
-            attributes:['Horario']
+            attributes: ['Horario']
         });
         return res
     }
