@@ -10,6 +10,17 @@ const getKey = async (req, res) =>{
     }
 }
 
+const testToUser = async (req, res) => {
+    const {idUser, title, message} = req.body;
+    try {
+        await subscription.sendNotificationToUser(idUser, title, message);
+        res.status(200).send({ success: true});
+    } catch (error) {
+        res.status(500).send({ success: true, message: error});
+    }
+
+}
+
 const create = async (req, res) => {
     try {
         const data = req.body;
@@ -69,4 +80,4 @@ const sendData = async (req, res) => {
     }
 }
 
-export {getKey, create, subscribeUser,_deleteSubscription, sendData}
+export {getKey, create, subscribeUser,_deleteSubscription, sendData, testToUser}
