@@ -111,7 +111,6 @@ class SubscriptionService {
                         auth: keys.auth       // Clave de autenticación
                     }
                 };
-    
                 try {
                     //console.log("Enviando a:", pushSubscription.endpoint);
                     await webPush.sendNotification(pushSubscription, notificationPayload);
