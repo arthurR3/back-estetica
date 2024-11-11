@@ -7,13 +7,14 @@ import UsersService from "../services/users.service.js"
 import DateDetailService from "../services/datesDetail.service.js";
 import MailService from "../services/notification.service.js";
 import Stripe from "stripe";
+import SubscriptionService from "../services/subscription.service.js";
 const stripe = new Stripe(process.env.STRIPE_ACCESS)
 const mailService = new MailService()
 const service = new DatesService();
 const usersService = new UsersService();
 const serviceS = new ServicesService();
 const datesDetail = new DateDetailService()
-
+const subscription = new SubscriptionService()
 
 function generateRandomPassword(length = 12) {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+[]{}|;:,.<>?';
@@ -228,7 +229,11 @@ const createSinPago = async (req, res) => {
             await mailService.sendRegistrationEmail(userEmail, tempPassword, citaData);
         } else {
             // Usuario ya registrado
-            await mailService.sendConfirmation(userEmail, citaData);
+            const title = 'Cita Registrada'
+            const message = `Estetica Emma recibió una cita para ti, no se te olvide de asistir. Revisa tu correo para mayor información.!`
+            
+            await subscription.sendNotificationToUser(userId,title, message)
+            //await mailService.sendConfirmation(userEmail, citaData);
         }
 
         res.json({ success: true });

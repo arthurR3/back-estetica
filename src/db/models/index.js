@@ -113,6 +113,9 @@ function setupModels(sequelize) {
 
     Promotion.belongsTo(Service, { foreignKey: 'id_service' }); // Una promoción puede pertenecer a un servicio.
     Service.hasMany(Promotion, { foreignKey: 'id_service' }); // Un servicio puede tener muchas promociones.
+
+    Subscription.belongsTo(User, { foreignKey: 'id_user' });
+    User.hasMany(Subscription, { foreignKey: 'id_user' });
 }
 
 export default setupModels;
