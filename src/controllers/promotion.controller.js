@@ -54,14 +54,17 @@ const createPromotion = async (req, res) => {
             id_product : req.body.productId || null,
             id_service : req.body.serviceId || null,
         }
-      //  console.log(data)
         const promotion = await promotionService.create(data);
-        if(promotion.status === true){
-            const title = 'Nueva Promocion'
-            const message = `Estetica Emma tiene un nuevo Descuento, ${promotion.title}, ingresa y se beneficiario del ${promotion.discount}%. Visitanos!`
-            await subscriptions.sendNotification(title, message)
+        const subs = await subscriptions.findAll()
+        const payload = {
+            title : 'Nueva Promocion',
+            message : `Estetica Emma tiene un nuevo Descuento, ${promotion.title}, ingresa y se beneficiario del ${promotion.discount}%. Visitanos!`
         }
-      //  console.log(promotion)
+        if(promotion.status === true){
+            subs.forEach( async (Subscripton) =>{
+                await subscriptions.sendNotification(Subscripton, payload)
+            })
+        }
         res.status(201).json(promotion);
     } catch (error) {
         res.status(400).json({ error: error.message });
