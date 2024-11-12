@@ -132,7 +132,7 @@ const getDateNotification = async (req, res) => {
             }
 
             const subs = await subscription.findByUser(userId)
-            console.log(subs)
+            //console.log(subs)
             subs.forEach(async (Subscriptions) =>{
                 await subscription.sendNotification(Subscriptions, payload)
 
