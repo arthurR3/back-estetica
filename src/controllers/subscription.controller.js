@@ -29,7 +29,7 @@ const create = async (req, res) => {
         await subscription.create(data);
         const payload = {
             title: '¡Gracias por suscribirte!',
-            body: '¡Gracias por aceptar nuestras notificaciones! Te mantendremos al tanto de las novedades. Te desea un buen día Estetica Emma!',
+            message: '¡Gracias por aceptar nuestras notificaciones! Te mantendremos al tanto de las novedades. Te desea un buen día Estetica Emma!',
         }
         await subscription.sendNotification(data, payload)
         res.status(201).json();
