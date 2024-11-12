@@ -36,11 +36,16 @@ const create = async (req, res) => {
 const subscribeUser = async( req, res ) => {
     const data = req.body;
     try {
+        console.log(data)
         const subscriptionActive = await subscription.findOne(data.subscription.endpoint);
         if(subscriptionActive){
-            await subscription.update(subscriptionActive.id, { id_user: data.id_user })
-            //console.log('Subscription updated')
-            res.status(200).json({success: true, message: 'Subscription asociate successfully'});
+            if(subscriptionActive.id_user != data.id_user){
+                await subscription.update(subscriptionActive.id, { id_user: data.id_user })
+                //console.log('Subscription updated')
+                res.status(200).json({success: true, message: 'Subscription asociate successfully'});
+            }else{
+                res.status(200).json({success: true, message: 'Subscription updated successfully'});
+            }
         }else{
             await subscription.create({
                 id_user: data.id_user,
