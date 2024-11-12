@@ -27,6 +27,11 @@ const create = async (req, res) => {
         //console.log(data)
         //res.status(200).send({ success: true, message: data});
         await subscription.create(data);
+        const payload = {
+            title: '¡Gracias por suscribirte!',
+            body: '¡Gracias por aceptar nuestras notificaciones! Te mantendremos al tanto de las novedades. Te desea un buen día Estetica Emma!',
+        }
+        await subscription.sendNotification(data, payload)
         res.status(201).json();
     } catch (error) {
         res.status(500).send({ success: false, message: error.message });
