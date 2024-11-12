@@ -78,7 +78,15 @@ const _deleteSubscription = async(req, res ) =>{
 const sendData = async (req, res) => {
     const {title, message} = req.body;
     try {
-        await subscription.sendNotification(title, message);
+        const payload = {
+            title: title,
+            message: message
+        }
+        const subs = await subscription.findAll()
+        subs.forEach(async (Subscriptions) =>{
+            await subscription.sendNotification(Subscriptions, payload)
+
+        })
         res.status(200).json();
     } catch (error) {
         res.status(500).json({ success: false, message: error.message});

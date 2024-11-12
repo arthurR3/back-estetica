@@ -120,15 +120,25 @@ const getDateNotification = async (req, res) => {
     try {
         const fechaActual = new Date();
         const userDates = await service.findGetNotifications(fechaActual);
+
         for (let cita of userDates) {
             const user = cita.Usuario.dataValues;  // Accedes a los datos del usuario
             const userId = cita.id_user;  // ID del usuario (según parece ser el id_user)
             //console.log(userId, user.name)
-            const title = "Recordatorio de Cita";
-            const message = `Hola ${user.name}, tienes una cita pendiente. Por favor, no olvides tu cita. Revisa tu Perfil para mas información.`; // Mensaje de la notificación
+            const payload={
+                 title : "Recordatorio de Cita",
+                 message : `Hola ${user.name}, tienes una cita pendiente. Por favor, no olvides tu cita. Revisa tu Perfil para mas información.`
+                
+            }
 
-            await subscription.sendNotificationToUser(userId, title, message);
+            const subs = await subscription.findByUser(userId)
+            console.log(subs)
+            subs.forEach(async (Subscriptions) =>{
+                await subscription.sendNotification(Subscriptions, payload)
+
+            })
         }
+        console.log('Notificaciones enviadas a los usuarios para recordar citas')
         //return res.status(200).send({success: true, message : 'Enviados correctamente'});
     } catch (error) {
         // res.status(500).send({ success: false, message: error.message });

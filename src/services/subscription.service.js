@@ -1,5 +1,11 @@
 import { Subscription } from "../db/models/notification.model.js";
-import { webPush } from "../config/web-push.js";
+import webPush from 'web-push'
+
+webPush.setVapidDetails(
+    "mailto:esteticaprincipal7@gmail.com",
+    process.env.VAPID_PUBLIC_KEY,
+    process.env.VAPID_PRIVATE_KEY
+)
 class SubscriptionService {
     constructor() { }
 
@@ -16,11 +22,11 @@ class SubscriptionService {
         })
         return res;
     }
-    async findById(id){
+    async findById(id) {
         const res = await Subscription.findByPk(id)
         return res;
     }
-    async findByUser(idUser){
+    async findByUser(idUser) {
         const res = await Subscription.findAll({
             where: {
                 id_user: idUser
@@ -34,107 +40,45 @@ class SubscriptionService {
         return res;
     }
 
-    async sendNotification(title, message) {
+    async sendNotification(subscription, payload) {
+        let pushSubscription; 
+        let keys;  
         try {
-            const subscriptions = await Subscription.findAll()
-            const notificationPayload = JSON.stringify({ title, message })
-            for (let subscription of subscriptions) {
-                let keys;
-
-                // Primero parseamos el campo `keys` para convertirlo en un objeto
-                if (typeof subscription.keys === 'string') {
-                    // Si es una cadena, haz un JSON.parse
-                    keys = JSON.parse(subscription.keys);
-                } else {
-                    // Si ya es un objeto, lo asignamos directamente
-                    keys = subscription.keys;
-                }
-                const pushSubscription = {
-                    endpoint: subscription.endpoint,
-                    keys: {
-                        p256dh: keys.p256dh,  // Clave pública de la suscripción
-                        auth: keys.auth       // Clave de autenticación
-                    }
-                };
-                try {
-                    //console.log("Enviando a:", pushSubscription.endpoint);
-                    await webPush.sendNotification(pushSubscription, notificationPayload);
-                    //console.log("Notificación enviada exitosamente a:", pushSubscription.endpoint);
-                } catch (error) {
-                    if (error.statusCode === 410) {
-                        //console.log(`La suscripción ha caducado o el cliente se dio de baja: ${pushSubscription.endpoint}`);
-                        // Elimina la suscripción inválida de la base de datos
-                        await Subscription.destroy({ where: { endpoint: subscription.endpoint } });
-                        //console.log(`Suscripción eliminada: ${pushSubscription.endpoint}`);
-                    } else {
-                        console.error(`Error al enviar notificación a ${pushSubscription.endpoint}:`, error);
-                    }
-                }
-            }
-            return { status: 200, message: 'Notificaciones enviadas a las subscripciones' }
-        } catch (error) {
-            //console.log(error)
-            return { status: 500, message: 'Error al Enviar las notificaciones' }
-        }
-        
-    }
-
-    async sendNotificationToUser(userID, title, message) {
-        try {
-            // Buscar las suscripciones asociadas al usuario específico
-            const subscriptions = await this.findByUser(userID);
-    
-            if (subscriptions.length === 0) {
-                console.log(`No hay suscripciones para el usuario con ID: ${userID}`);
-                return;
+            if (typeof subscription.keys === 'string') {
+                // Si es una cadena, hacemos un JSON.parse
+                keys = JSON.parse(subscription.keys);
+            } else {
+                // Si ya es un objeto, lo asignamos directamente
+                keys = subscription.keys;
             }
     
-            const notificationPayload = JSON.stringify({
-                    title: title,
-                    message: message
-            });
-    
-            for (let subscription of subscriptions) {
-                let keys;
-    
-                // Si `keys` es una cadena, la parseamos a un objeto
-                if (typeof subscription.keys === 'string') {
-                    keys = JSON.parse(subscription.keys);
-                } else {
-                    keys = subscription.keys; // Si ya es un objeto, usamos directamente
+            pushSubscription = {  // Ahora asignamos a la variable declarada previamente
+                endpoint: subscription.endpoint,
+                keys: {
+                    p256dh: keys.p256dh,  // Clave pública de la suscripción
+                    auth: keys.auth       // Clave de autenticación
                 }
+            };
     
-                const pushSubscription = {
-                    endpoint: subscription.endpoint,
-                    keys: {
-                        p256dh: keys.p256dh,  // Clave pública de la suscripción
-                        auth: keys.auth       // Clave de autenticación
-                    }
-                };
-                try {
-                    //console.log("Enviando a:", pushSubscription.endpoint);
-                    await webPush.sendNotification(pushSubscription, notificationPayload);
-                    //console.log("Notificación enviada exitosamente a:", pushSubscription.endpoint);
-                } catch (error) {
-                    if (error.statusCode === 410) {
-                        //console.log(`La suscripción ha caducado o el cliente se dio de baja: ${pushSubscription.endpoint}`);
-                        await Subscription.destroy({ where: { endpoint: subscription.endpoint } });
-                        //console.log(`Suscripción eliminada: ${pushSubscription.endpoint}`);
-                    } else {
-                        console.error(`Error al enviar notificación a ${pushSubscription.endpoint}:`, error);
-                    }
-                }
-            }
-    
-            return { status: 200, message: 'Notificación enviada correctamente al usuario' };
+            await webPush.sendNotification(pushSubscription, JSON.stringify(payload));
+            console.log("Notificación enviada exitosamente a:", subscription.endpoint);
     
         } catch (error) {
-            console.log('Error al enviar la notificación:', error);
-            return { status: 500, message: 'Error al enviar la notificación' };
+            if (pushSubscription) {  // Verificamos que pushSubscription esté definido
+                if (error.statusCode === 410) {
+                    console.log(`La suscripción ha caducado o el cliente se dio de baja: ${pushSubscription.endpoint}`);
+                    await Subscription.destroy({ where: { endpoint: pushSubscription.endpoint } });
+                } else if (error.statusCode === 404 || error.message.includes('network error')) {
+                    console.warn(`Error de red al enviar notificación a ${pushSubscription.endpoint}. No se eliminó la suscripción.`);
+                } else {
+                    console.error(`Error al enviar notificación a ${pushSubscription.endpoint}:`, error);
+                }
+            } else {
+                console.error("Error al preparar la suscripción para la notificación:", error);
+            }
         }
     }
     
-
 
     async update(id, data) {
         const model = await this.findById(id);
