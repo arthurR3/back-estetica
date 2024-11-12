@@ -132,7 +132,7 @@ const getDateNotification = async (req, res) => {
             }
 
             const subs = await subscription.findByUser(userId)
-            console.log(subs)
+            //console.log(subs)
             subs.forEach(async (Subscriptions) =>{
                 await subscription.sendNotification(Subscriptions, payload)
 
@@ -260,11 +260,15 @@ const createSinPago = async (req, res) => {
             await mailService.sendRegistrationEmail(userEmail, tempPassword, citaData);
         } else {
             // Usuario ya registrado
-            const title = 'Cita Registrada'
-            const message = `Estetica Emma recibió una cita para ti, no se te olvide de asistir. Revisa tu correo para mayor información.!`
+            const payload={
+                title :'Cita Registrada',
+                message : `Estetica Emma recibió una cita para ti, no se te olvide de asistir. Revisa tu correo para mayor información.!`
+           }
+            const subs = await subscription.findByUser(userId)
+            subs.forEach(async (Subscriptions) =>{
+                await subscription.sendNotification(Subscriptions, payload)
 
-            await subscription.sendNotificationToUser(userId, title, message)
-            //await mailService.sendConfirmation(userEmail, citaData);
+            })
         }
 
         res.json({ success: true });
