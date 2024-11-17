@@ -405,58 +405,64 @@ const receiveComplete = async (req, res) =>{
 }  
 
 /**>>>>>>>>>>>>>>>>>>>>>>PARTE MOVIL */
-
-const createSessionMobile = async (req, res ) => {
+const createSessionMobile = async (req, res) => {
     try {
-        const {amount} = req.body;
+        const { amount } = req.body;
+        console.log('Request body:', req.body);
 
-    const paymentIntent = await stripe.paymentIntents.create({
-        amount,
-        currency:'mxn',
-        payment_method_types:['card']
-    })
+        const paymentIntent = await stripe.paymentIntents.create({
+            amount,
+            currency: 'mxn',
+            payment_method_types: ['card']
+        });
 
-    return res.status(200).send({client_secret: paymentIntent.client_secret})
+        console.log('Payment Intent:', paymentIntent);
+
+        return res.status(200).send({ client_secret: paymentIntent.client_secret });
     } catch (error) {
-        res.status(500).send({error: error.message})
+        console.error('Error en createSessionMobile:', error.message);
+        res.status(500).send({ error: error.message });
     }
-}
-
+};
 
 const confirmatePayment = async (req, res) => {
     const response = req.body;
+   // console.log('Request body in confirmatePayment:', response);
 
     try {
         const paymentIntent = await stripe.paymentIntents.retrieve(response.session_id);
+        //console.log('Payment Intent retrieved:', paymentIntent);
 
-        if(paymentIntent.status !== 'succeeded'){
-            return res.status(400).send({message: 'Payment intent not completed'})
-        }        
-        
+        if (paymentIntent.status !== 'succeeded') {
+            return res.status(400).send({ message: 'Payment intent not completed' });
+        }
+
         const newSale = await saleService.create({
             id_user: response.id_user,
             id_payment: 5,
             id_address: response.direccion,
-            shipping_status:"En proceso",
+            shipping_status: "En proceso",
             total: response.total,
             date: new Date()
-        })
+        });
+
+       // console.log('New sale created:', newSale);
 
         const productos = response.productos;
         const idSale = newSale.dataValues.id;
-        const details = {
-            idSale,
-            transactionAmount: response.total,
-            productos,
-        }
+        await saleDetailService.create(productos, idSale);
+        //console.log('Sale details created for sale ID:', idSale);
 
-        await saleDetailService.create(productos, idSale)
-        await cartService.delete(response.id_user)
-        return res.status(200).json({message: 'Compra completada exitosament'})
+        await cartService.delete(response.id_user);
+        //console.log('Cart deleted for user:', response.id_user);
+
+        return res.status(200).json({ message: 'Compra completada exitosamente' });
     } catch (error) {
+       /// console.error('Error en confirmatePayment:', error);
         return res.status(500).json({ message: 'Error al completar la compra', error: error });
     }
-}
+};
+
 /* <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< */
 
 const getTotalDeliveredSales = async (req, res) => {
