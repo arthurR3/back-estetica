@@ -427,7 +427,7 @@ const confirmatePayment = async (req, res) => {
     const response = req.body;
 
     try {
-        const paymentIntent = await stripe.paymentIntents.retrieve(response.id_user);
+        const paymentIntent = await stripe.paymentIntents.retrieve(response.session_id);
 
         if(paymentIntent.status !== 'succeeded'){
             return res.status(400).send({message: 'Payment intent not completed'})
