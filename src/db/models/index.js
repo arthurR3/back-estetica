@@ -22,6 +22,7 @@ import { HGRALSchema, HorarioG } from './horarioGnral.model.js';
 import { HEXPSchema, HorarioEXP } from './horarioException.model.js';
 import { SubscriptionSchema, Subscription } from './notification.model.js';
 import { SalesView, SalesViewSchema } from './sales_view.model.js';
+import { Survey, SurveySchema } from './survey.model.js';
 
 function setupModels(sequelize) {
     User.init(UserSchema, User.config(sequelize));
@@ -48,7 +49,7 @@ function setupModels(sequelize) {
     HorarioEXP.init(HEXPSchema, HorarioEXP.config(sequelize));
     Subscription.init(SubscriptionSchema, Subscription.config(sequelize))
     SalesView.init(SalesViewSchema, SalesView.config(sequelize));
-
+    Survey.init(SurveySchema, Survey.config(sequelize));
     // Establecer relaciones
     Date.belongsTo(User, { foreignKey: 'id_user' }); // Una cita pertenece a un usuario.
     User.hasMany(Date, { foreignKey: 'id_user' }); // Un usuario puede tener muchas citas.
@@ -116,6 +117,9 @@ function setupModels(sequelize) {
 
     Subscription.belongsTo(User, { foreignKey: 'id_user' });
     User.hasMany(Subscription, { foreignKey: 'id_user' });
+
+    Survey.belongsTo(User,{ foreignKey: 'id_user' })
+    User.hasMany(Survey,{ foreignKey: 'id_user' })
 }
 
 export default setupModels;
