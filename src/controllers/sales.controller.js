@@ -410,13 +410,13 @@ const createSessionMobile = async (req, res ) => {
     try {
         const {amount} = req.body;
 
-    const paymentIntent = stripe.paymentIntents.create({
+    const paymentIntent = await stripe.paymentIntents.create({
         amount,
         currency:'mxn',
         payment_method_types:['card']
     })
 
-    return res.status(200).send({client_secret: (await paymentIntent).client_secret})
+    return res.status(200).send({client_secret: paymentIntent.client_secret})
     } catch (error) {
         res.status(500).send({error: error.message})
     }
