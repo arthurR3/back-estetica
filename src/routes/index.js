@@ -21,7 +21,7 @@ import PromotionRouter from './promotion.router.js'
 import HorarioGnralRouter from './horarioGnral.router.js'
 import HorarioEXPRouter from './horarioException.router.js'
 import SubscriptionRouter from './subscription.router.js'
-
+import SurveyRouter from './survey.router.js'
 import salesViewRouter from './sales_view.router.js'; 
 
 function routerApi(app) {
@@ -48,7 +48,7 @@ function routerApi(app) {
   router.use('/horarioGnral', HorarioGnralRouter);
   router.use('/horarioEXP', HorarioEXPRouter);
   router.use('/subscription', SubscriptionRouter);
-
+  router.use('/survey', SurveyRouter);
   router.use('/salesView', salesViewRouter);
 
 }

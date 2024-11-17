@@ -402,7 +402,62 @@ const receiveComplete = async (req, res) =>{
         return res.status(500).json({ message: 'Error al completar la compra', error: error });
 
     }
-}   
+}  
+
+/**>>>>>>>>>>>>>>>>>>>>>>PARTE MOVIL */
+
+const createSessionMobile = async (req, res ) => {
+    try {
+        const {amount} = req.body;
+
+    const paymentIntent = stripe.paymentIntents.create({
+        amount,
+        currency:'mxn',
+        payment_method_types:['card']
+    })
+
+    return res.status(200).send({client_secret: (await paymentIntent).client_secret})
+    } catch (error) {
+        res.status(500).send({error: error.message})
+    }
+}
+
+
+const confirmatePayment = async (req, res) => {
+    const response = req.body;
+
+    try {
+        const paymentIntent = await stripe.paymentIntents.retrieve(response.id_user);
+
+        if(paymentIntent.status !== 'succeeded'){
+            return res.status(400).send({message: 'Payment intent not completed'})
+        }        
+        
+        const newSale = await saleService.create({
+            id_user: response.id_user,
+            id_payment: 5,
+            id_address: response.direccion,
+            shipping_status:"En proceso",
+            total: response.total,
+            date: new Date()
+        })
+
+        const productos = response.productos;
+        const idSale = newSale.dataValues.id;
+        const details = {
+            idSale,
+            transactionAmount: response.total,
+            productos,
+        }
+
+        await saleDetailService.create(productos, idSale)
+        await cartService.delete(response.id_user)
+        return res.status(200).json({message: 'Compra completada exitosament'})
+    } catch (error) {
+        return res.status(500).json({ message: 'Error al completar la compra', error: error });
+    }
+}
+/* <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< */
 
 const getTotalDeliveredSales = async (req, res) => {
     try {
@@ -435,5 +490,5 @@ const _delete = async (req, res) => {
 }
 
 export {
-    createSession, getTotalDeliveredSales, simulatePayment, receiveComplete, get, getById, update, _delete
+    createSession, getTotalDeliveredSales, simulatePayment, receiveComplete, createSessionMobile, confirmatePayment, get, getById, update, _delete
 };
