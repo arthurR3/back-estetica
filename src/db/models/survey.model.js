@@ -36,6 +36,15 @@ const SurveySchema = {
         type: DataTypes.INTEGER,
         field: 'pregunta_2',
     },
+    question3:{
+        allowNull: false,
+        type: DataTypes.INTEGER,
+        field: 'pregunta_3',
+    },
+    createdAt:{
+        type: DataTypes.DATE,
+        field: 'created_at',
+    }
 }
 
 export {Survey, SurveySchema};
