@@ -11,7 +11,7 @@ dotenv.config();
 const port = process.env.PORT || 3000;
 
 const corsOptions = {
-    origin: ['https://estetica-principal.netlify.app', 'https://estetica-emma.netlify.app', 'http://localhost:3000', 'http://localhost:8081'],
+    origin: ['https://estetica-principal.netlify.app', "https://proyecto-ing-ka2q.vercel.app",'https://estetica-emma.netlify.app', 'http://localhost:3000', 'http://localhost:8081'],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
     optionsSuccessStatus: 204,
