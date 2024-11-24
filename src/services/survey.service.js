@@ -13,10 +13,21 @@ class SurveyServices {
         return res;
     }
     async findById(id) {
-        const res = await Survey.findByPk(id);
+        const res = await Survey.findAll({
+            where:{
+                id_user: id
+            }
+        });
         return res;
     }
     
+    async getTotalUsers(){
+        const res = await  Survey.findAll({
+            attributes:[[Survey.sequelize.fn('DISTINCT', Survey.sequelize.col('id_usuario')), 'id_user']]
+        })
+        return res.length;
+    }
+
     async create(data) {
         const res = await Survey.create(data);
         return res;

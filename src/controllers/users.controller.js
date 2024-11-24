@@ -6,11 +6,13 @@ import LogsServices from '../services/logs.services.js';
 import jwt from 'jsonwebtoken';
 import AddressesService from '../services/addresses.service.js';
 import ImageUploadService from '../services/imageUpload.service.js';
+import DatesService from '../services/dates.service.js';
 const uploadImage = new ImageUploadService();
 const codeService = new ResetCodeService();
 const service = new UsersService();
 const addressService = new AddressesService();
 const logService = new LogsServices();
+const dateService = new DatesService();
 
 let blockedUsers = {};
 const saltRounds = 10;
@@ -302,6 +304,9 @@ const login = async (req, res) => {
             return res.status(403).json({ success: false, message: 'Por favor, inicie sesión a través del portal de administración.' });
         }
 
+        const hasDates= await dateService.findByUserId(response.id)
+        const showSurvey = hasDates && !response.complete_survey;
+        console.log(showSurvey)
         const usuario = {
             idUser: response.id,
             nombre: response.name,
@@ -310,6 +315,7 @@ const login = async (req, res) => {
             lastName2: response.last_name2,
             rol: response.id_role,
             code: response.code,
+            showSurvey: showSurvey
         }
         const token = jwt.sign({ user: usuario }, secretKey, { expiresIn: '2h' })
         await logService.logLogin(req.ip, email)
