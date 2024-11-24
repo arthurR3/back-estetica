@@ -122,6 +122,12 @@ const UserSchema = {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
         field: 'Notificaciones'
+    },
+    complete_survey:{
+        allowNull: true,
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        field: 'Encuesta_completa'
     }
 }
 
