@@ -307,7 +307,7 @@ const login = async (req, res) => {
 
         const hasDates = await dateService.findByUserId(response.id);
         console.log('hasdate', hasDates)
-        if(hasDates){
+        if(hasDates.length > 0){
             if(response.complete_survey === false){
                 showSurvey = true
             }else{
