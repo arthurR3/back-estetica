@@ -304,8 +304,9 @@ const login = async (req, res) => {
             return res.status(403).json({ success: false, message: 'Por favor, inicie sesión a través del portal de administración.' });
         }
 
-        const hasDates= await dateService.findByUserId(response.id)
-        const showSurvey = hasDates && !response.complete_survey;
+        const hasDates = await dateService.findByUserId(response.id);
+        const showSurvey = Boolean(hasDates) && !response.complete_survey;
+        
         console.log(showSurvey)
         const usuario = {
             idUser: response.id,
