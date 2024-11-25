@@ -274,6 +274,7 @@ export const verifySecretAnswer = async (req, res) => {
 const login = async (req, res) => {
     try {
         const { email, password } = req.body;
+        let showSurvey= false;
         const response = await service.findByEmail(email);
         if (!response) {
             return res.status(401).json({ success: false, message: 'Correo electronico incorrecto!' })
@@ -305,8 +306,16 @@ const login = async (req, res) => {
         }
 
         const hasDates = await dateService.findByUserId(response.id);
-        const showSurvey = Boolean(hasDates) && !response.complete_survey;
-        
+        console.log('hasdate', hasDates)
+        if(hasDates){
+            if(response.complete_survey === false){
+                showSurvey = true
+            }else{
+                showSurvey = false
+            }
+        }else{
+            showSurvey = false
+        }
         console.log(showSurvey)
         const usuario = {
             idUser: response.id,
